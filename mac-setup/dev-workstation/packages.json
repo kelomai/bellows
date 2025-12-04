@@ -55,7 +55,6 @@
       "node",
       "go",
       "dotnet",
-      "dotnet-sdk",
       "openjdk@21"
     ],
     "version_managers": [
