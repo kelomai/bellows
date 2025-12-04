@@ -20,7 +20,6 @@
 # Usage:
 #   ./install-dev-workstation.sh              # Run full setup
 #   ./install-dev-workstation.sh --dry-run    # Preview without changes
-#   ./install-dev-workstation.sh --skip-mas   # Skip Mac App Store apps
 #   ./install-dev-workstation.sh --shells-only # Only configure shells
 #
 # Remote:
@@ -36,16 +35,12 @@ set -e
 # COMMAND LINE FLAGS
 # =============================================================================
 DRY_RUN=false
-SKIP_MAS=false
 SHELLS_ONLY=false
 
 for arg in "$@"; do
     case $arg in
         --dry-run|-n)
             DRY_RUN=true
-            ;;
-        --skip-mas)
-            SKIP_MAS=true
             ;;
         --shells-only)
             SHELLS_ONLY=true
@@ -57,11 +52,6 @@ if $DRY_RUN; then
     echo "============================================="
     echo "  DRY RUN MODE - No changes will be made"
     echo "============================================="
-    echo ""
-fi
-
-if $SKIP_MAS; then
-    echo "[INFO] Skipping Mac App Store apps (--skip-mas)"
     echo ""
 fi
 
@@ -266,34 +256,6 @@ install_homebrew() {
     else
         log_success "Homebrew updated recently (${age_hours} hours ago), skipping update"
     fi
-}
-
-# =============================================================================
-# MAC APP STORE INSTALLATION
-# =============================================================================
-install_mas_apps() {
-    if ! command -v mas &>/dev/null; then
-        log_warn "mas CLI not installed, skipping App Store apps"
-        return
-    fi
-
-    # Check if signed into App Store
-    if ! mas account &>/dev/null; then
-        log_warn "Not signed into App Store. Please sign in manually first."
-        log_info "Open App Store app and sign in, then re-run this script."
-        return
-    fi
-
-    log_info "Installing Mac App Store apps..."
-    while IFS='|' read -r app_id app_name; do
-        [[ -z "$app_id" ]] && continue
-        if mas list | grep -q "^$app_id"; then
-            log_success "$app_name ($app_id) already installed"
-        else
-            log_info "Installing $app_name ($app_id)..."
-            mas install "$app_id" || log_warn "Failed to install $app_name"
-        fi
-    done < <(get_package_map "mas_apps")
 }
 
 # =============================================================================
@@ -841,19 +803,6 @@ main() {
             fi
         fi
     done < <(get_packages "formulae")
-
-    # Install Mac App Store apps
-    if $SKIP_MAS; then
-        log_info "Skipping Mac App Store apps (--skip-mas flag)"
-    elif $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Install Mac App Store apps?"
-    else
-        read -p "Install Mac App Store apps (requires App Store sign-in)? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_mas_apps
-        fi
-    fi
 
     # Setup Python environment
     if $DRY_RUN; then

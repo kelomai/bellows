@@ -63,7 +63,7 @@ curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/dev-
 
 ## 📂 Directory Structure
 
-```
+```text
 mac-setup/
 ├── README.md                           # This file
 ├── llm-workstation/
@@ -82,7 +82,6 @@ Both scripts support:
 
 ```bash
 ./install-*.sh --dry-run      # Preview changes without executing
-./install-*.sh --skip-mas     # Skip Mac App Store apps
 ./install-*.sh --shells-only  # Only configure shells (zsh + pwsh)
 ```
 

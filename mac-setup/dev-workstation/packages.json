@@ -57,7 +57,6 @@
 
   "formulae": {
     "core": [
-      "mas",
       "git",
       "gh",
       "curl",
@@ -116,11 +115,6 @@
     "security": [
       "ggshield"
     ]
-  },
-
-  "mas_apps": {
-    "497799835": "Xcode",
-    "1480933944": "Vimari"
   },
 
   "edge_extensions": {
