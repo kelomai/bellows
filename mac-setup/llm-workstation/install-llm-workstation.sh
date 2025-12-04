@@ -487,7 +487,9 @@ setup_ollama_models() {
 
     # Display models from manifest by category
     for category in coding general fast specialized; do
-        echo "  ${category^} Models:"
+        # Capitalize first letter (bash 3 compatible)
+        cap_category="$(echo "$category" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
+        echo "  $cap_category Models:"
         echo "$PACKAGES_JSON" | jq -r ".ollama_models.$category[]?" 2>/dev/null | while read -r model; do
             [[ -z "$model" ]] && continue
             echo "    ollama pull $model"
