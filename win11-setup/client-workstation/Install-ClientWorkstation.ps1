@@ -14,14 +14,21 @@
     - Communication (Slack, Zoom)
     - Productivity (1Password, Notion, Adobe Reader)
     - Shell customization (oh-my-posh)
+
+    Package configuration is loaded from packages.json (local file or GitHub).
 .PARAMETER DryRun
     Preview what would be installed without making changes
+.PARAMETER ManifestPath
+    Path to a local packages.json file (optional, defaults to GitHub)
 .EXAMPLE
     .\Install-ClientWorkstation.ps1
     Run the full installation interactively
 .EXAMPLE
     .\Install-ClientWorkstation.ps1 -DryRun
     Preview all installations without making changes
+.EXAMPLE
+    .\Install-ClientWorkstation.ps1 -ManifestPath .\my-packages.json
+    Use a custom package manifest
 .LINK
     https://github.com/kelomai/bellows
 .NOTES
@@ -33,13 +40,15 @@
 #>
 
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [string]$ManifestPath
 )
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 $ErrorActionPreference = "Continue"
+$GithubManifestUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/client-workstation/packages.json"
 
 if ($DryRun) {
     Write-Host "=============================================" -ForegroundColor Cyan
@@ -52,36 +61,6 @@ Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "  Windows 11 Client Workstation Setup" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
-
-# =============================================================================
-# WINGET PACKAGES
-# =============================================================================
-
-$wingetApps = @(
-    # --- Browsers ---
-    @{id = "Google.Chrome"; name = "Chrome" }
-
-    # --- Microsoft 365 ---
-    @{id = "Microsoft.Office"; name = "Microsoft Office" }
-    @{id = "Microsoft.OneDrive"; name = "OneDrive" }
-    @{id = "Microsoft.PowerShell"; name = "PowerShell 7" }
-    @{id = "Microsoft.WindowsTerminal"; name = "Windows Terminal" }
-
-    # --- Communication ---
-    @{id = "SlackTechnologies.Slack"; name = "Slack" }
-    @{id = "Zoom.Zoom"; name = "Zoom" }
-
-    # --- Productivity ---
-    @{id = "AgileBits.1Password"; name = "1Password" }
-    @{id = "Notion.Notion"; name = "Notion" }
-    @{id = "Adobe.Acrobat.Reader.64-bit"; name = "Adobe Acrobat Reader" }
-
-    # --- Utilities ---
-    @{id = "7zip.7zip"; name = "7-Zip" }
-
-    # --- Fonts ---
-    @{id = "NerdFonts.CascadiaCode"; name = "Cascadia Code Nerd Font" }
-)
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -105,6 +84,52 @@ function Write-Info {
 function Write-Warn {
     param([string]$Message)
     Write-Host "  [WARN] $Message" -ForegroundColor Yellow
+}
+
+function Get-PackageManifest {
+    param(
+        [string]$LocalPath,
+        [string]$RemoteUrl
+    )
+
+    # Try local file first
+    if ($LocalPath -and (Test-Path $LocalPath)) {
+        Write-Info "Loading manifest from: $LocalPath"
+        try {
+            $content = Get-Content $LocalPath -Raw
+            return $content | ConvertFrom-Json
+        }
+        catch {
+            Write-Warn "Failed to parse local manifest: $_"
+        }
+    }
+
+    # Check for packages.json in script directory
+    $scriptDir = Split-Path -Parent $MyInvocation.ScriptName
+    if ($scriptDir) {
+        $localManifest = Join-Path $scriptDir "packages.json"
+        if (Test-Path $localManifest) {
+            Write-Info "Loading manifest from: $localManifest"
+            try {
+                $content = Get-Content $localManifest -Raw
+                return $content | ConvertFrom-Json
+            }
+            catch {
+                Write-Warn "Failed to parse local manifest: $_"
+            }
+        }
+    }
+
+    # Fall back to GitHub
+    Write-Info "Fetching manifest from GitHub..."
+    try {
+        $response = Invoke-WebRequest -Uri $RemoteUrl -UseBasicParsing
+        return $response.Content | ConvertFrom-Json
+    }
+    catch {
+        Write-Host "  ERROR: Failed to load package manifest: $_" -ForegroundColor Red
+        exit 1
+    }
 }
 
 function Install-WingetPackage {
@@ -135,12 +160,34 @@ function Install-WingetPackage {
     }
 }
 
+function Install-WingetCategory {
+    param(
+        [array]$Packages,
+        [string]$CategoryName
+    )
+
+    if ($null -eq $Packages -or $Packages.Count -eq 0) {
+        return
+    }
+
+    foreach ($pkg in $Packages) {
+        Install-WingetPackage -Id $pkg.id -Name $pkg.name
+    }
+}
+
+# =============================================================================
+# LOAD PACKAGE MANIFEST
+# =============================================================================
+Write-Step "[1/4] Loading package manifest..."
+$manifest = Get-PackageManifest -LocalPath $ManifestPath -RemoteUrl $GithubManifestUrl
+Write-Success "Package manifest loaded"
+
 # =============================================================================
 # MAIN INSTALLATION
 # =============================================================================
 
 # Check for winget
-Write-Step "[1/3] Checking winget..."
+Write-Step "[2/4] Checking winget..."
 if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
     Write-Host "  ERROR: winget not found. Please install App Installer from Microsoft Store." -ForegroundColor Red
     exit 1
@@ -148,15 +195,17 @@ if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
 Write-Success "winget available"
 
 # Install Applications
-Write-Step "[2/3] Installing applications ($($wingetApps.Count) apps)..."
-foreach ($app in $wingetApps) {
-    Install-WingetPackage -Id $app.id -Name $app.name
+Write-Step "[3/4] Installing applications..."
+$categories = @("browsers", "microsoft", "communication", "productivity", "utilities", "fonts", "shell")
+foreach ($category in $categories) {
+    $packages = $manifest.winget.$category
+    Install-WingetCategory -Packages $packages -CategoryName $category
 }
 
 # =============================================================================
 # SHELL CONFIGURATION (oh-my-posh)
 # =============================================================================
-Write-Step "[3/3] Configuring PowerShell..."
+Write-Step "[4/4] Configuring PowerShell..."
 
 $ompConfigDir = "$env:USERPROFILE\.config\oh-my-posh"
 $ompConfig = "$ompConfigDir\bellows.omp.json"
@@ -167,13 +216,6 @@ if ($DryRun) {
     Write-Info "[DRY RUN] Would configure PowerShell profile"
 }
 else {
-    # Install oh-my-posh
-    $ompInstalled = winget list --id "JanDeDobbeleer.OhMyPosh" 2>$null | Select-String "OhMyPosh"
-    if (!$ompInstalled) {
-        Write-Info "Installing oh-my-posh..."
-        winget install --id "JanDeDobbeleer.OhMyPosh" --accept-package-agreements --accept-source-agreements --silent
-    }
-
     # Create config directory
     if (!(Test-Path $ompConfigDir)) {
         New-Item -ItemType Directory -Path $ompConfigDir -Force | Out-Null
@@ -181,7 +223,7 @@ else {
 
     # Download theme
     Write-Info "Downloading oh-my-posh theme..."
-    $themeUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/cli/bellows.omp.json"
+    $themeUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/cli/oh-my-posh/bellows.omp.json"
     try {
         Invoke-WebRequest -Uri $themeUrl -OutFile $ompConfig -UseBasicParsing
         Write-Success "Theme downloaded to $ompConfig"

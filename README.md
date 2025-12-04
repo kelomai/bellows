@@ -67,6 +67,7 @@ wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/he
 - 🔧 **Tools**: VS Code, Git, Docker, GitKraken
 - 🏗️ **IaC**: Terraform, Packer
 - ☁️ **Cloud**: Azure CLI, AWS CLI, kubectl, Helm
+- 🔒 **Security**: GitGuardian (ggshield)
 - 🐚 **Shell**: oh-my-zsh, oh-my-posh, Nerd Fonts
 
 ### 🤖 LLM Workstations (macOS)
@@ -141,11 +142,19 @@ bellows/
 │       └── packages.json
 ├── win11-setup/
 │   ├── dev-workstation/        # 👨‍💻 Windows developer setup
+│   │   ├── Install-*.ps1       #    └── Setup script
+│   │   └── packages.json       #    └── Package manifest
 │   ├── client-workstation/     # 💼 Windows business user setup
+│   │   ├── Install-*.ps1       #    └── Setup script
+│   │   └── packages.json       #    └── Package manifest
 │   └── Debloat-Windows.ps1     # 🧹 Remove bloatware
 ├── ubuntu-setup/
 │   ├── dev-workstation/        # 🖥️ Ubuntu Desktop setup
+│   │   ├── install-*.sh        #    └── Setup script
+│   │   └── packages.json       #    └── Package manifest
 │   ├── headless/               # 💻 CLI-only setup
+│   │   ├── install-*.sh        #    └── Setup script
+│   │   └── packages.json       #    └── Package manifest
 │   └── update.sh               # 🔄 Update all packages
 ├── cli/                        # 🎨 Shell themes (oh-my-posh)
 ├── docs/                       # 📚 Detailed documentation

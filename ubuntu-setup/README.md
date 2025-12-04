@@ -40,6 +40,7 @@ wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/he
 | **Claude Code** | AI coding assistant |
 | **Cloud CLIs** | Azure CLI, AWS CLI, Google Cloud CLI, GitHub CLI |
 | **DevOps** | Docker, Terraform, kubectl, Helm, k9s |
+| **Security** | GitGuardian (ggshield) |
 | **Shell** | Zsh, Oh My Zsh |
 | **Utilities** | jq, htop, tree, ripgrep, tmux |
 | **Fonts** | FiraCode Nerd Font, MesloLGS Nerd Font |
@@ -70,10 +71,32 @@ ubuntu-setup/
 ├── README.md                              # This file
 ├── update.sh                              # Update script (common)
 ├── dev-workstation/
-│   └── install-dev-workstation.sh         # Full desktop setup
+│   ├── install-dev-workstation.sh         # Full desktop setup
+│   └── packages.json                      # Package manifest (customize this!)
 └── headless/
-    └── install-headless.sh                # CLI-only setup
+    ├── install-headless.sh                # CLI-only setup
+    └── packages.json                      # Package manifest (customize this!)
 ```
+
+---
+
+## 🎨 Customization
+
+Package lists are defined in `packages.json` files. To customize:
+
+```bash
+# Clone the repo
+git clone https://github.com/kelomai/bellows.git
+cd bellows/ubuntu-setup/dev-workstation
+
+# Edit packages.json to add/remove packages
+nano packages.json
+
+# Run the script (it will use local packages.json)
+./install-dev-workstation.sh
+```
+
+Remote execution (`wget | bash`) fetches packages.json from GitHub automatically.
 
 ---
 

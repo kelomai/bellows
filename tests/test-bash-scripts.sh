@@ -147,6 +147,10 @@ echo "--- Checking JSON manifests ---"
 JSON_FILES=(
     "mac-setup/llm-workstation/packages.json"
     "mac-setup/dev-workstation/packages.json"
+    "win11-setup/dev-workstation/packages.json"
+    "win11-setup/client-workstation/packages.json"
+    "ubuntu-setup/dev-workstation/packages.json"
+    "ubuntu-setup/headless/packages.json"
 )
 
 if command -v jq &>/dev/null; then

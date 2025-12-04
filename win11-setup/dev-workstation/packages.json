@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Windows 11 Developer Workstation Package Manifest",
+
+  "winget": {
+    "browsers": [
+      {"id": "Mozilla.Firefox", "name": "Firefox"},
+      {"id": "Google.Chrome", "name": "Chrome"},
+      {"id": "Microsoft.Edge", "name": "Edge"}
+    ],
+    "development": [
+      {"id": "Microsoft.VisualStudioCode", "name": "VS Code"},
+      {"id": "GitHub.GitHubDesktop", "name": "GitHub Desktop"},
+      {"id": "Axosoft.GitKraken", "name": "GitKraken"},
+      {"id": "Docker.DockerDesktop", "name": "Docker Desktop"},
+      {"id": "ScooterSoftware.BeyondCompare4", "name": "Beyond Compare"},
+      {"id": "Warp.Warp", "name": "Warp Terminal"},
+      {"id": "Microsoft.WindowsTerminal", "name": "Windows Terminal"}
+    ],
+    "ai_llm": [
+      {"id": "LMStudio.LMStudio", "name": "LM Studio"},
+      {"id": "Ollama.Ollama", "name": "Ollama"},
+      {"id": "OpenAI.ChatGPT", "name": "ChatGPT"},
+      {"id": "Anthropic.Claude", "name": "Claude"}
+    ],
+    "communication": [
+      {"id": "SlackTechnologies.Slack", "name": "Slack"},
+      {"id": "OpenWhisperSystems.Signal", "name": "Signal"},
+      {"id": "Telegram.TelegramDesktop", "name": "Telegram"},
+      {"id": "WhatsApp.WhatsApp", "name": "WhatsApp"}
+    ],
+    "microsoft_azure": [
+      {"id": "Microsoft.PowerShell", "name": "PowerShell 7"},
+      {"id": "Microsoft.AzureStorageExplorer", "name": "Azure Storage Explorer"},
+      {"id": "Microsoft.Office", "name": "Microsoft Office"},
+      {"id": "Microsoft.OneDrive", "name": "OneDrive"}
+    ],
+    "productivity": [
+      {"id": "AgileBits.1Password", "name": "1Password"},
+      {"id": "Notion.Notion", "name": "Notion"},
+      {"id": "Spotify.Spotify", "name": "Spotify"},
+      {"id": "TechSmith.Snagit", "name": "Snagit"},
+      {"id": "Raycast.Raycast", "name": "Raycast"}
+    ],
+    "fonts": [
+      {"id": "NerdFonts.FiraCode", "name": "Fira Code Nerd Font"},
+      {"id": "NerdFonts.JetBrainsMono", "name": "JetBrains Mono Nerd Font"}
+    ],
+    "cli_core": [
+      {"id": "Git.Git", "name": "Git"},
+      {"id": "GitHub.cli", "name": "GitHub CLI"},
+      {"id": "cURL.cURL", "name": "cURL"},
+      {"id": "stedolan.jq", "name": "jq"}
+    ],
+    "cli_languages": [
+      {"id": "Python.Python.3.13", "name": "Python 3.13"},
+      {"id": "OpenJS.NodeJS", "name": "Node.js"},
+      {"id": "GoLang.Go", "name": "Go"},
+      {"id": "Microsoft.DotNet.SDK.8", "name": ".NET SDK 8"},
+      {"id": "EclipseAdoptium.Temurin.21.JDK", "name": "OpenJDK 21"}
+    ],
+    "cli_iac": [
+      {"id": "Hashicorp.Terraform", "name": "Terraform"},
+      {"id": "Hashicorp.Packer", "name": "Packer"}
+    ],
+    "cli_kubernetes": [
+      {"id": "Kubernetes.kubectl", "name": "kubectl"},
+      {"id": "Helm.Helm", "name": "Helm"}
+    ],
+    "cli_azure": [
+      {"id": "Microsoft.AzureCLI", "name": "Azure CLI"},
+      {"id": "Microsoft.Azd", "name": "Azure Developer CLI"}
+    ],
+    "cli_database": [
+      {"id": "PostgreSQL.PostgreSQL", "name": "PostgreSQL"},
+      {"id": "Microsoft.SQLServerManagementStudio", "name": "SQL Server Management Studio"}
+    ],
+    "cli_shell": [
+      {"id": "JanDeDobbeleer.OhMyPosh", "name": "oh-my-posh"}
+    ]
+  },
+
+  "vscode_extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-azuretools.vscode-docker",
+    "hashicorp.terraform",
+    "github.copilot",
+    "github.copilot-chat",
+    "continue.continue",
+    "ms-dotnettools.csharp",
+    "golang.go",
+    "esbenp.prettier-vscode",
+    "eamodio.gitlens"
+  ],
+
+  "pipx_packages": [
+    "poetry",
+    "ggshield"
+  ],
+
+  "ollama_models": {
+    "recommended": [
+      "qwen2.5-coder:32b",
+      "llama3.2:3b",
+      "llama3.3:70b"
+    ]
+  }
+}

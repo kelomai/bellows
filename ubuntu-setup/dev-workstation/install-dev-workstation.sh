@@ -6,6 +6,8 @@
 # Automated setup script for an Ubuntu development workstation.
 # Optimized for Proxmox VMs and cloud development.
 #
+# Package configuration is loaded from packages.json (local file or GitHub).
+#
 # Includes:
 #   - Core: Git, MS Edge, GitKraken, VS Code, Postman, DBeaver
 #   - Languages: Go, Node.js, Python, .NET SDK, PowerShell
@@ -29,28 +31,36 @@
 # Author: Bellows
 # License: MIT
 # =============================================================================
-#
-# Log file: ~/ubuntu-setup-<timestamp>.log
 
-# Setup logging and error tracking
+set -e
+
+# Configuration
+GITHUB_MANIFEST_URL="https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/dev-workstation/packages.json"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="$HOME/ubuntu-setup-${TIMESTAMP}.log"
 FAILED_INSTALLS=()
 SUCCESSFUL_INSTALLS=()
 
-# Logging function - shows on screen and logs to file
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
 log() {
     echo "$1" | tee -a "$LOG_FILE"
 }
 
-# Install wrapper - runs commands in subshell, tracks success/failure
+log_step() {
+    echo "" | tee -a "$LOG_FILE"
+    echo "=== $1 ===" | tee -a "$LOG_FILE"
+}
+
 install_package() {
     local name="$1"
     shift
     log ""
-    log "=== Installing $name ==="
+    log "Installing $name..."
 
-    # Run all commands in subshell, capture output
     if (
         set -e
         "$@"
@@ -61,15 +71,14 @@ install_package() {
     else
         FAILED_INSTALLS+=("$name")
         log "✗ $name FAILED - see log for details"
-        return 1
+        return 0  # Don't exit on failure
     fi
 }
 
-# For multi-command installs, use this pattern
 install_with_commands() {
     local name="$1"
     log ""
-    log "=== Installing $name ==="
+    log "Installing $name..."
 
     if (
         set -e
@@ -81,212 +90,375 @@ install_with_commands() {
     else
         FAILED_INSTALLS+=("$name")
         log "✗ $name FAILED - see log for details"
-        return 1
+        return 0  # Don't exit on failure
     fi
 }
 
-# Start
+# Load package manifest from local file or GitHub
+load_manifest() {
+    local manifest_file=""
+
+    # Check for local packages.json
+    if [[ -f "$SCRIPT_DIR/packages.json" ]]; then
+        manifest_file="$SCRIPT_DIR/packages.json"
+        log "Loading manifest from: $manifest_file"
+    else
+        # Fetch from GitHub
+        log "Fetching manifest from GitHub..."
+        manifest_file="/tmp/packages-$$.json"
+        if ! curl -fsSL "$GITHUB_MANIFEST_URL" -o "$manifest_file"; then
+            log "ERROR: Failed to download package manifest"
+            exit 1
+        fi
+    fi
+
+    # Validate JSON
+    if ! jq empty "$manifest_file" 2>/dev/null; then
+        log "ERROR: Invalid JSON in manifest file"
+        exit 1
+    fi
+
+    echo "$manifest_file"
+}
+
+# Get packages from manifest by category
+get_apt_packages() {
+    local manifest="$1"
+    local category="$2"
+    jq -r ".apt.$category[]? // empty" "$manifest" 2>/dev/null | tr '\n' ' '
+}
+
+get_snap_packages() {
+    local manifest="$1"
+    local type="$2"
+    jq -r ".snap.$type[]?.name // empty" "$manifest" 2>/dev/null | tr '\n' ' '
+}
+
+has_third_party() {
+    local manifest="$1"
+    local category="$2"
+    local package="$3"
+    jq -e ".third_party.$category | index(\"$package\")" "$manifest" >/dev/null 2>&1
+}
+
+# =============================================================================
+# START
+# =============================================================================
+
 echo "=== Ubuntu Development Environment Setup ===" | tee "$LOG_FILE"
 echo "Started at: $(date)" | tee -a "$LOG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
 echo ""
+
+# Ensure jq is available for JSON parsing
+if ! command -v jq &>/dev/null; then
+    log "Installing jq for JSON parsing..."
+    sudo apt update >> "$LOG_FILE" 2>&1
+    sudo apt install -y jq >> "$LOG_FILE" 2>&1
+fi
+
+# Load manifest
+MANIFEST=$(load_manifest)
+log "✓ Package manifest loaded"
+
+# =============================================================================
+# APT PACKAGES
+# =============================================================================
+
+log_step "Installing APT packages"
 
 # Update package lists
 log "Updating package lists..."
 sudo apt update >> "$LOG_FILE" 2>&1
 
 # Install prerequisites
-log "Installing prerequisites..."
-sudo apt install -y curl wget apt-transport-https ca-certificates gnupg lsb-release software-properties-common unzip >> "$LOG_FILE" 2>&1
+PREREQS=$(get_apt_packages "$MANIFEST" "prerequisites")
+if [[ -n "$PREREQS" ]]; then
+    install_package "Prerequisites" sudo apt install -y $PREREQS
+fi
 
-# 1. Git
-install_package "Git" sudo apt install -y git
+# Install core packages
+CORE=$(get_apt_packages "$MANIFEST" "core")
+if [[ -n "$CORE" ]]; then
+    install_package "Core Tools" sudo apt install -y $CORE
+    sudo systemctl enable ssh >> "$LOG_FILE" 2>&1 || true
+fi
 
-# 2. Microsoft Edge
-install_with_commands "Microsoft Edge" '
-curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list > /dev/null
-sudo apt update
-sudo apt install -y microsoft-edge-stable
-'
+# Install utilities
+UTILS=$(get_apt_packages "$MANIFEST" "utilities")
+if [[ -n "$UTILS" ]]; then
+    install_package "Utilities" sudo apt install -y $UTILS
+fi
 
-# 3. GitKraken
-install_package "GitKraken" sudo snap install gitkraken --classic
+# Install networking tools
+NETWORK=$(get_apt_packages "$MANIFEST" "networking")
+if [[ -n "$NETWORK" ]]; then
+    install_package "Networking Tools" sudo apt install -y $NETWORK
+fi
 
-# 4. PowerShell
-install_package "PowerShell" sudo snap install powershell --classic
+# Install Python
+PYTHON=$(get_apt_packages "$MANIFEST" "python")
+if [[ -n "$PYTHON" ]]; then
+    install_package "Python" sudo apt install -y $PYTHON
+fi
 
-# 4b. Azure PowerShell Module
-install_with_commands "Azure PowerShell Module" '
-pwsh -Command "Install-Module -Name Az -Repository PSGallery -Force -Scope CurrentUser -AcceptLicense"
-'
+# Install database clients
+DATABASE=$(get_apt_packages "$MANIFEST" "database")
+if [[ -n "$DATABASE" ]]; then
+    install_package "Database Clients" sudo apt install -y $DATABASE
+fi
 
-# 5. Terraform
-install_with_commands "Terraform" '
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update
-sudo apt install -y terraform
-'
+# Install shell
+SHELL_PKGS=$(get_apt_packages "$MANIFEST" "shell")
+if [[ -n "$SHELL_PKGS" ]]; then
+    install_package "Shell" sudo apt install -y $SHELL_PKGS
+fi
 
-# 6. PostgreSQL client
-install_package "PostgreSQL Client" sudo apt install -y postgresql-client
+# Install Proxmox tools
+PROXMOX=$(get_apt_packages "$MANIFEST" "proxmox")
+if [[ -n "$PROXMOX" ]]; then
+    install_with_commands "Proxmox VM Tools" "
+        sudo apt install -y $PROXMOX
+        sudo systemctl enable qemu-guest-agent 2>/dev/null || true
+    "
+fi
 
-# 7. Go
-install_package "Go" sudo snap install go --classic
+# Install remote tools
+REMOTE=$(get_apt_packages "$MANIFEST" "remote")
+if [[ -n "$REMOTE" ]]; then
+    install_with_commands "Remote Desktop (xrdp)" "
+        sudo apt install -y $REMOTE
+        sudo systemctl enable xrdp 2>/dev/null || true
+        sudo adduser xrdp ssl-cert 2>/dev/null || true
+    "
+fi
 
-# 8. Node.js + Claude Code
-install_with_commands "Node.js + Claude Code" '
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt install -y nodejs
-sudo npm install -g @anthropic-ai/claude-code
-'
+# =============================================================================
+# SNAP PACKAGES
+# =============================================================================
 
-# 9. Docker
-install_with_commands "Docker" '
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-sudo usermod -aG docker $USER
-'
+log_step "Installing Snap packages"
 
-# 10. VS Code
-install_with_commands "VS Code" '
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/vscode-archive-keyring.gpg > /dev/null
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/vscode-archive-keyring.gpg] https://packages.microsoft.com/repos/vscode stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
-sudo apt update
-sudo apt install -y code
-'
+# Classic snaps
+CLASSIC_SNAPS=$(get_snap_packages "$MANIFEST" "classic")
+for snap in $CLASSIC_SNAPS; do
+    install_package "$snap (snap)" sudo snap install "$snap" --classic
+done
 
-# 11. Azure CLI
-install_with_commands "Azure CLI" '
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-'
+# Standard snaps
+STANDARD_SNAPS=$(get_snap_packages "$MANIFEST" "standard")
+for snap in $STANDARD_SNAPS; do
+    install_package "$snap (snap)" sudo snap install "$snap"
+done
 
-# 12. Utilities
-install_with_commands "Utilities" '
-sudo apt install -y jq htop build-essential tree ripgrep openssh-server
-sudo systemctl enable ssh
-'
+# =============================================================================
+# THIRD-PARTY PACKAGES (require custom install logic)
+# =============================================================================
 
-# 13. Networking Tools
-install_package "Networking Tools" sudo apt install -y dnsutils whois traceroute mtr-tiny nmap netcat-openbsd tcpdump iftop net-tools
+log_step "Installing third-party packages"
 
-# 14. Proxmox VM Tools
-install_with_commands "Proxmox VM Tools" '
-sudo apt install -y qemu-guest-agent spice-vdagent
-sudo systemctl enable qemu-guest-agent
-'
+# Microsoft Edge
+if has_third_party "$MANIFEST" "browsers" "microsoft-edge"; then
+    install_with_commands "Microsoft Edge" '
+        curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-edge.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list > /dev/null
+        sudo apt update
+        sudo apt install -y microsoft-edge-stable
+    '
+fi
 
-# 15. Python
-install_package "Python" sudo apt install -y python3 python3-pip python3-venv
+# VS Code
+if has_third_party "$MANIFEST" "editors" "vscode"; then
+    install_with_commands "VS Code" '
+        wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/vscode-archive-keyring.gpg > /dev/null
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/vscode-archive-keyring.gpg] https://packages.microsoft.com/repos/vscode stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+        sudo apt update
+        sudo apt install -y code
+    '
+fi
 
-# 16. .NET SDK (latest via install script)
-install_with_commands ".NET SDK" '
-curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
-chmod +x /tmp/dotnet-install.sh
-sudo /tmp/dotnet-install.sh --channel STS --install-dir /usr/local/dotnet
-sudo ln -sf /usr/local/dotnet/dotnet /usr/local/bin/dotnet
-rm /tmp/dotnet-install.sh
-'
+# Node.js
+if has_third_party "$MANIFEST" "languages" "nodejs"; then
+    install_with_commands "Node.js" '
+        curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+        sudo apt install -y nodejs
+    '
 
-# 17. kubectl (latest stable)
-install_with_commands "kubectl" '
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/kubernetes-apt-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
-sudo apt update
-sudo apt install -y kubectl
-'
+    # Install npm global packages
+    NPM_PACKAGES=$(jq -r '.npm_global[]? // empty' "$MANIFEST" 2>/dev/null)
+    for pkg in $NPM_PACKAGES; do
+        install_package "$pkg (npm)" sudo npm install -g "$pkg"
+    done
+fi
 
-# 18. Helm
-install_with_commands "Helm" '
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-'
+# .NET SDK
+if has_third_party "$MANIFEST" "languages" "dotnet"; then
+    install_with_commands ".NET SDK" '
+        curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
+        chmod +x /tmp/dotnet-install.sh
+        sudo /tmp/dotnet-install.sh --channel STS --install-dir /usr/local/dotnet
+        sudo ln -sf /usr/local/dotnet/dotnet /usr/local/bin/dotnet
+        rm /tmp/dotnet-install.sh
+    '
+fi
 
-# 19. k9s
-install_with_commands "k9s" '
-curl -sS https://webinstall.dev/k9s | bash
-'
+# Azure CLI
+if has_third_party "$MANIFEST" "cloud" "azure-cli"; then
+    install_with_commands "Azure CLI" '
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    '
+fi
 
-# 20. 1Password CLI
-install_with_commands "1Password CLI" '
-curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main" | sudo tee /etc/apt/sources.list.d/1password.list
-sudo apt update
-sudo apt install -y 1password-cli
-'
+# AWS CLI
+if has_third_party "$MANIFEST" "cloud" "aws-cli"; then
+    install_with_commands "AWS CLI" '
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
+        unzip -q /tmp/awscliv2.zip -d /tmp
+        sudo /tmp/aws/install --update
+        rm -rf /tmp/awscliv2.zip /tmp/aws
+    '
+fi
 
-# 21. xrdp
-install_with_commands "xrdp" '
-sudo apt install -y xrdp
-sudo systemctl enable xrdp
-sudo adduser xrdp ssl-cert 2>/dev/null || true
-'
+# Google Cloud CLI
+if has_third_party "$MANIFEST" "cloud" "gcloud-cli"; then
+    install_with_commands "Google Cloud CLI" '
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+        echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+        sudo apt update
+        sudo apt install -y google-cloud-cli
+    '
+fi
 
-# 22. Postman
-install_package "Postman" sudo snap install postman
+# GitHub CLI
+if has_third_party "$MANIFEST" "cloud" "github-cli"; then
+    install_with_commands "GitHub CLI" '
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install -y gh
+    '
+fi
 
-# 23. Azure Storage Explorer
-install_package "Azure Storage Explorer" sudo snap install storage-explorer
+# Docker
+if has_third_party "$MANIFEST" "devops" "docker"; then
+    install_with_commands "Docker" '
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt update
+        sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        sudo usermod -aG docker $USER
+    '
+fi
 
-# 24. GitHub CLI
-install_with_commands "GitHub CLI" '
-curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-sudo apt update
-sudo apt install -y gh
-'
+# Terraform
+if has_third_party "$MANIFEST" "devops" "terraform"; then
+    install_with_commands "Terraform" '
+        wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+        sudo apt update
+        sudo apt install -y terraform
+    '
+fi
 
-# 25. AWS CLI
-install_with_commands "AWS CLI" '
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip"
-unzip -q /tmp/awscliv2.zip -d /tmp
-sudo /tmp/aws/install --update
-rm -rf /tmp/awscliv2.zip /tmp/aws
-'
+# kubectl
+if has_third_party "$MANIFEST" "devops" "kubectl"; then
+    install_with_commands "kubectl" '
+        curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /usr/share/keyrings/kubernetes-apt-keyring.gpg
+        echo "deb [signed-by=/usr/share/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+        sudo apt update
+        sudo apt install -y kubectl
+    '
+fi
 
-# 26. Google Cloud CLI
-install_with_commands "Google Cloud CLI" '
-curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-sudo apt update
-sudo apt install -y google-cloud-cli
-'
+# Helm
+if has_third_party "$MANIFEST" "devops" "helm"; then
+    install_with_commands "Helm" '
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    '
+fi
 
-# 27. DBeaver
-install_package "DBeaver" sudo snap install dbeaver-ce
+# k9s
+if has_third_party "$MANIFEST" "devops" "k9s"; then
+    install_with_commands "k9s" '
+        curl -sS https://webinstall.dev/k9s | bash
+    '
+fi
 
-# 28. Zsh + Oh My Zsh
-install_with_commands "Zsh + Oh My Zsh" '
-sudo apt install -y zsh
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-sudo chsh -s $(which zsh) $USER
-'
+# 1Password CLI
+if has_third_party "$MANIFEST" "security" "1password-cli"; then
+    install_with_commands "1Password CLI" '
+        curl -sS https://downloads.1password.com/linux/keys/1password.asc | sudo gpg --dearmor -o /usr/share/keyrings/1password-archive-keyring.gpg
+        echo "deb [arch=amd64 signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/amd64 stable main" | sudo tee /etc/apt/sources.list.d/1password.list
+        sudo apt update
+        sudo apt install -y 1password-cli
+    '
+fi
 
-# 29. Nerd Fonts
-install_with_commands "Nerd Fonts" '
-mkdir -p ~/.local/share/fonts
-cd ~/.local/share/fonts
-curl -fLo "FiraCode Nerd Font Regular.ttf" https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
-curl -fLo "FiraCode Nerd Font Bold.ttf" https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
-fc-cache -fv
-'
+# GitGuardian ggshield
+if has_third_party "$MANIFEST" "security" "ggshield"; then
+    install_package "ggshield (GitGuardian)" pip3 install --user ggshield
+fi
 
-# 30. Oh My Posh
-install_with_commands "Oh My Posh" '
-curl -s https://ohmyposh.dev/install.sh | bash -s
-mkdir -p ~/.config/powershell
-cat > ~/.config/powershell/Microsoft.PowerShell_profile.ps1 << PWSH_PROFILE
+# =============================================================================
+# SHELL CONFIGURATION
+# =============================================================================
+
+log_step "Configuring shell"
+
+# Oh My Zsh
+if has_third_party "$MANIFEST" "shell" "oh-my-zsh"; then
+    install_with_commands "Oh My Zsh" '
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+        sudo chsh -s $(which zsh) $USER
+    '
+
+    # Install Zsh plugins from manifest
+    ZSH_PLUGINS=$(jq -r '.zsh_plugins[]? // empty' "$MANIFEST" 2>/dev/null)
+    for plugin in $ZSH_PLUGINS; do
+        plugin_name=$(basename "$plugin")
+        install_with_commands "Zsh plugin: $plugin_name" "
+            ZSH_CUSTOM=\"\${ZSH_CUSTOM:-\$HOME/.oh-my-zsh/custom}\"
+            git clone https://github.com/$plugin \"\$ZSH_CUSTOM/plugins/$plugin_name\" 2>/dev/null || true
+        "
+    done
+fi
+
+# Nerd Fonts
+if has_third_party "$MANIFEST" "shell" "nerd-fonts"; then
+    install_with_commands "Nerd Fonts" '
+        mkdir -p ~/.local/share/fonts
+        cd ~/.local/share/fonts
+        curl -fLo "FiraCode Nerd Font Regular.ttf" https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Regular/FiraCodeNerdFont-Regular.ttf
+        curl -fLo "FiraCode Nerd Font Bold.ttf" https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/FiraCode/Bold/FiraCodeNerdFont-Bold.ttf
+        fc-cache -fv
+    '
+fi
+
+# Oh My Posh
+if has_third_party "$MANIFEST" "shell" "oh-my-posh"; then
+    install_with_commands "Oh My Posh" '
+        curl -s https://ohmyposh.dev/install.sh | bash -s
+        mkdir -p ~/.config/powershell
+        cat > ~/.config/powershell/Microsoft.PowerShell_profile.ps1 << PWSH_PROFILE
 # Oh My Posh with Azure theme
 oh-my-posh init pwsh --config ~/.cache/oh-my-posh/themes/cloud-native-azure.omp.json | Invoke-Expression
 PWSH_PROFILE
-'
+    '
+fi
 
-# ============================================
+# PowerShell modules
+PS_MODULES=$(jq -r '.powershell_modules[]? // empty' "$MANIFEST" 2>/dev/null)
+for module in $PS_MODULES; do
+    install_with_commands "PowerShell Module: $module" "
+        pwsh -Command \"Install-Module -Name $module -Repository PSGallery -Force -Scope CurrentUser -AcceptLicense\"
+    "
+done
+
+# =============================================================================
 # SUMMARY
-# ============================================
+# =============================================================================
+
 log ""
 log "============================================"
 log "=== Installation Complete ==="

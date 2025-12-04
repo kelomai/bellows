@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Windows 11 Client Workstation Package Manifest (Business/Productivity)",
+
+  "winget": {
+    "browsers": [
+      {"id": "Google.Chrome", "name": "Chrome"}
+    ],
+    "microsoft": [
+      {"id": "Microsoft.Office", "name": "Microsoft Office"},
+      {"id": "Microsoft.OneDrive", "name": "OneDrive"},
+      {"id": "Microsoft.PowerShell", "name": "PowerShell 7"},
+      {"id": "Microsoft.WindowsTerminal", "name": "Windows Terminal"}
+    ],
+    "communication": [
+      {"id": "SlackTechnologies.Slack", "name": "Slack"},
+      {"id": "Zoom.Zoom", "name": "Zoom"}
+    ],
+    "productivity": [
+      {"id": "AgileBits.1Password", "name": "1Password"},
+      {"id": "Notion.Notion", "name": "Notion"},
+      {"id": "Adobe.Acrobat.Reader.64-bit", "name": "Adobe Acrobat Reader"}
+    ],
+    "utilities": [
+      {"id": "7zip.7zip", "name": "7-Zip"}
+    ],
+    "fonts": [
+      {"id": "NerdFonts.CascadiaCode", "name": "Cascadia Code Nerd Font"}
+    ],
+    "shell": [
+      {"id": "JanDeDobbeleer.OhMyPosh", "name": "oh-my-posh"}
+    ]
+  }
+}

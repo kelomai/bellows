@@ -6,7 +6,8 @@
     "hashicorp/tap",
     "jandedobbeleer/oh-my-posh",
     "microsoft/mssql-release",
-    "azure/azd"
+    "azure/azd",
+    "gitguardian/tap"
   ],
 
   "casks": {
@@ -49,7 +50,11 @@
       "adobe-acrobat-pro",
       "spotify",
       "snagit",
-      "raycast"
+      "raycast",
+      "rectangle",
+      "keepingyouawake",
+      "bitwarden",
+      "cleanmymac"
     ],
     "hardware": [
       "displaylink",
@@ -119,19 +124,15 @@
       "graphviz",
       "xz",
       "zstd"
+    ],
+    "security": [
+      "ggshield"
     ]
   },
 
   "mas_apps": {
     "497799835": "Xcode",
-    "1451685025": "WireGuard",
-    "441258766": "Magnet",
-    "1480933944": "Vimari",
-    "937984704": "Amphetamine",
-    "1352778147": "Bitwarden",
-    "1339170533": "CleanMyMac X",
-    "967805235": "Paste",
-    "1500855883": "CapCut"
+    "1480933944": "Vimari"
   },
 
   "edge_extensions": {

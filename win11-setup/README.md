@@ -4,13 +4,15 @@ Automated setup scripts for Windows 11 workstations. Choose between **Developer*
 
 ## Directory Structure
 
-```
+```text
 win11-setup/
 ├── Debloat-Windows.ps1                      # Remove bloatware & telemetry
 ├── dev-workstation/
-│   └── Install-DevWorkstation.ps1           # Full dev environment + LLM stack
+│   ├── Install-DevWorkstation.ps1           # Full dev environment + LLM stack
+│   └── packages.json                        # Package manifest (customize this!)
 └── client-workstation/
-    └── Install-ClientWorkstation.ps1        # Productivity apps only
+    ├── Install-ClientWorkstation.ps1        # Productivity apps only
+    └── packages.json                        # Package manifest (customize this!)
 ```
 
 ---
@@ -61,7 +63,41 @@ irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-W
 
 ---
 
-## Developer Workstation
+## Customization
+
+Package lists are defined in `packages.json` files, separate from the install scripts. To customize what gets installed:
+
+### Option 1: Edit packages.json locally
+
+```powershell
+# Clone the repo
+git clone https://github.com/kelomai/bellows.git
+cd bellows/win11-setup/dev-workstation
+
+# Edit packages.json to add/remove packages
+notepad packages.json
+
+# Run the script (it will use local packages.json)
+.\Install-DevWorkstation.ps1
+```
+
+### Option 2: Use a custom manifest
+
+```powershell
+# Use your own packages.json file
+.\Install-DevWorkstation.ps1 -ManifestPath C:\path\to\my-packages.json
+```
+
+### Option 3: Remote execution (uses default packages)
+
+```powershell
+# Fetches packages.json from GitHub automatically
+irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/dev-workstation/Install-DevWorkstation.ps1 | iex
+```
+
+---
+
+## Developer Workstation Packages
 
 ### GUI Applications
 
@@ -88,6 +124,7 @@ irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-W
 | **Kubernetes** | kubectl, Helm |
 | **Azure** | azure-cli, azd |
 | **Database** | PostgreSQL, SQL Server Management Studio |
+| **Security** | GitGuardian (ggshield) |
 | **Shell** | oh-my-posh |
 
 ### VS Code Extensions
@@ -114,11 +151,11 @@ ollama pull llama3.3:70b           # 40GB - Most capable
 
 ---
 
-## Client Workstation
+## Client Workstation Packages
 
 Lightweight setup for business users.
 
-### Applications
+### Included Applications
 
 | Category | Apps |
 |----------|------|

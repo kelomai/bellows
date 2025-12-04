@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Ubuntu Developer Workstation Package Manifest (Desktop with GUI)",
+
+  "apt": {
+    "prerequisites": [
+      "curl",
+      "wget",
+      "apt-transport-https",
+      "ca-certificates",
+      "gnupg",
+      "lsb-release",
+      "software-properties-common",
+      "unzip"
+    ],
+    "core": [
+      "git",
+      "build-essential",
+      "openssh-server"
+    ],
+    "utilities": [
+      "jq",
+      "htop",
+      "tree",
+      "ripgrep"
+    ],
+    "networking": [
+      "dnsutils",
+      "whois",
+      "traceroute",
+      "mtr-tiny",
+      "nmap",
+      "netcat-openbsd",
+      "tcpdump",
+      "iftop",
+      "net-tools"
+    ],
+    "python": [
+      "python3",
+      "python3-pip",
+      "python3-venv"
+    ],
+    "database": [
+      "postgresql-client"
+    ],
+    "shell": [
+      "zsh"
+    ],
+    "proxmox": [
+      "qemu-guest-agent",
+      "spice-vdagent"
+    ],
+    "remote": [
+      "xrdp"
+    ]
+  },
+
+  "snap": {
+    "classic": [
+      {"name": "gitkraken", "description": "GitKraken"},
+      {"name": "powershell", "description": "PowerShell"},
+      {"name": "go", "description": "Go"}
+    ],
+    "standard": [
+      {"name": "postman", "description": "Postman"},
+      {"name": "storage-explorer", "description": "Azure Storage Explorer"},
+      {"name": "dbeaver-ce", "description": "DBeaver"}
+    ]
+  },
+
+  "third_party": {
+    "browsers": ["microsoft-edge"],
+    "editors": ["vscode"],
+    "languages": ["nodejs", "dotnet"],
+    "cloud": ["azure-cli", "aws-cli", "gcloud-cli", "github-cli"],
+    "devops": ["docker", "terraform", "kubectl", "helm", "k9s"],
+    "security": ["1password-cli", "ggshield"],
+    "shell": ["oh-my-zsh", "oh-my-posh", "nerd-fonts"]
+  },
+
+  "npm_global": [
+    "@anthropic-ai/claude-code"
+  ],
+
+  "powershell_modules": [
+    "Az"
+  ],
+
+  "zsh_plugins": [
+    "zsh-users/zsh-autosuggestions",
+    "zsh-users/zsh-syntax-highlighting"
+  ],
+
+  "nerd_fonts": [
+    "FiraCode"
+  ]
+}

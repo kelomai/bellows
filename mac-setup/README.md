@@ -44,6 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/dev-
 | **Languages** | Python 3.13, Node.js, Go, .NET, OpenJDK 21 |
 | **IaC** | Terraform, Packer |
 | **Cloud** | Azure CLI, kubectl, kubelogin |
+| **Security** | GitGuardian (ggshield) |
 | **Shell** | oh-my-zsh + oh-my-posh |
 
 ### 🧠 LLM Workstation Only
@@ -84,6 +85,26 @@ Both scripts support:
 ./install-*.sh --skip-mas     # Skip Mac App Store apps
 ./install-*.sh --shells-only  # Only configure shells (zsh + pwsh)
 ```
+
+---
+
+## 🎨 Customization
+
+Package lists are defined in `packages.json` files. To customize:
+
+```bash
+# Clone the repo
+git clone https://github.com/kelomai/bellows.git
+cd bellows/mac-setup/dev-workstation
+
+# Edit packages.json to add/remove packages
+code packages.json
+
+# Run the script (it will use local packages.json)
+./install-dev-workstation.sh
+```
+
+Remote execution (`curl | bash`) fetches packages.json from GitHub automatically.
 
 ---
 

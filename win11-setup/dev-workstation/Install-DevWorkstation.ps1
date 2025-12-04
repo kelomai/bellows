@@ -14,14 +14,21 @@
     - Cloud tools (Azure CLI, kubectl, Helm)
     - Local LLM stack (Ollama, LM Studio)
     - Shell customization (oh-my-posh)
+
+    Package configuration is loaded from packages.json (local file or GitHub).
 .PARAMETER DryRun
     Preview what would be installed without making changes
+.PARAMETER ManifestPath
+    Path to a local packages.json file (optional, defaults to GitHub)
 .EXAMPLE
     .\Install-DevWorkstation.ps1
     Run the full installation interactively
 .EXAMPLE
     .\Install-DevWorkstation.ps1 -DryRun
     Preview all installations without making changes
+.EXAMPLE
+    .\Install-DevWorkstation.ps1 -ManifestPath .\my-packages.json
+    Use a custom package manifest
 .LINK
     https://github.com/kelomai/bellows
 .NOTES
@@ -33,13 +40,15 @@
 #>
 
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [string]$ManifestPath
 )
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 $ErrorActionPreference = "Continue"
+$GithubManifestUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/dev-workstation/packages.json"
 
 if ($DryRun) {
     Write-Host "=============================================" -ForegroundColor Cyan
@@ -52,91 +61,6 @@ Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "  Windows 11 Dev Workstation Setup" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
-
-# =============================================================================
-# WINGET PACKAGES
-# =============================================================================
-
-# GUI Applications
-$wingetApps = @(
-    # --- Browsers ---
-    @{id = "Mozilla.Firefox"; name = "Firefox" }
-    @{id = "Google.Chrome"; name = "Chrome" }
-    @{id = "Microsoft.Edge"; name = "Edge" }
-
-    # --- Development Tools ---
-    @{id = "Microsoft.VisualStudioCode"; name = "VS Code" }
-    @{id = "GitHub.GitHubDesktop"; name = "GitHub Desktop" }
-    @{id = "Axosoft.GitKraken"; name = "GitKraken" }
-    @{id = "Docker.DockerDesktop"; name = "Docker Desktop" }
-    @{id = "ScooterSoftware.BeyondCompare4"; name = "Beyond Compare" }
-    @{id = "Warp.Warp"; name = "Warp Terminal" }
-    @{id = "Microsoft.WindowsTerminal"; name = "Windows Terminal" }
-
-    # --- AI/LLM Tools ---
-    @{id = "LMStudio.LMStudio"; name = "LM Studio" }
-    @{id = "Ollama.Ollama"; name = "Ollama" }
-    @{id = "OpenAI.ChatGPT"; name = "ChatGPT" }
-    @{id = "Anthropic.Claude"; name = "Claude" }
-
-    # --- Communication ---
-    @{id = "SlackTechnologies.Slack"; name = "Slack" }
-    @{id = "OpenWhisperSystems.Signal"; name = "Signal" }
-    @{id = "Telegram.TelegramDesktop"; name = "Telegram" }
-    @{id = "WhatsApp.WhatsApp"; name = "WhatsApp" }
-
-    # --- Microsoft/Azure ---
-    @{id = "Microsoft.PowerShell"; name = "PowerShell 7" }
-    @{id = "Microsoft.AzureStorageExplorer"; name = "Azure Storage Explorer" }
-    @{id = "Microsoft.Office"; name = "Microsoft Office" }
-    @{id = "Microsoft.OneDrive"; name = "OneDrive" }
-
-    # --- Productivity ---
-    @{id = "AgileBits.1Password"; name = "1Password" }
-    @{id = "Notion.Notion"; name = "Notion" }
-    @{id = "Spotify.Spotify"; name = "Spotify" }
-    @{id = "TechSmith.Snagit"; name = "Snagit" }
-    @{id = "Raycast.Raycast"; name = "Raycast" }
-
-    # --- Fonts ---
-    @{id = "NerdFonts.FiraCode"; name = "Fira Code Nerd Font" }
-    @{id = "NerdFonts.JetBrainsMono"; name = "JetBrains Mono Nerd Font" }
-)
-
-# CLI Tools
-$wingetCLI = @(
-    # --- Core Development ---
-    @{id = "Git.Git"; name = "Git" }
-    @{id = "GitHub.cli"; name = "GitHub CLI" }
-    @{id = "cURL.cURL"; name = "cURL" }
-    @{id = "stedolan.jq"; name = "jq" }
-
-    # --- Languages & Runtimes ---
-    @{id = "Python.Python.3.13"; name = "Python 3.13" }
-    @{id = "OpenJS.NodeJS"; name = "Node.js" }
-    @{id = "GoLang.Go"; name = "Go" }
-    @{id = "Microsoft.DotNet.SDK.8"; name = ".NET SDK 8" }
-    @{id = "EclipseAdoptium.Temurin.21.JDK"; name = "OpenJDK 21" }
-
-    # --- Infrastructure as Code ---
-    @{id = "Hashicorp.Terraform"; name = "Terraform" }
-    @{id = "Hashicorp.Packer"; name = "Packer" }
-
-    # --- Kubernetes & Containers ---
-    @{id = "Kubernetes.kubectl"; name = "kubectl" }
-    @{id = "Helm.Helm"; name = "Helm" }
-
-    # --- Azure ---
-    @{id = "Microsoft.AzureCLI"; name = "Azure CLI" }
-    @{id = "Microsoft.Azd"; name = "Azure Developer CLI" }
-
-    # --- Database ---
-    @{id = "PostgreSQL.PostgreSQL"; name = "PostgreSQL" }
-    @{id = "Microsoft.SQLServerManagementStudio"; name = "SQL Server Management Studio" }
-
-    # --- Shell ---
-    @{id = "JanDeDobbeleer.OhMyPosh"; name = "oh-my-posh" }
-)
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -160,6 +84,52 @@ function Write-Info {
 function Write-Warn {
     param([string]$Message)
     Write-Host "  [WARN] $Message" -ForegroundColor Yellow
+}
+
+function Get-PackageManifest {
+    param(
+        [string]$LocalPath,
+        [string]$RemoteUrl
+    )
+
+    # Try local file first
+    if ($LocalPath -and (Test-Path $LocalPath)) {
+        Write-Info "Loading manifest from: $LocalPath"
+        try {
+            $content = Get-Content $LocalPath -Raw
+            return $content | ConvertFrom-Json
+        }
+        catch {
+            Write-Warn "Failed to parse local manifest: $_"
+        }
+    }
+
+    # Check for packages.json in script directory
+    $scriptDir = Split-Path -Parent $MyInvocation.ScriptName
+    if ($scriptDir) {
+        $localManifest = Join-Path $scriptDir "packages.json"
+        if (Test-Path $localManifest) {
+            Write-Info "Loading manifest from: $localManifest"
+            try {
+                $content = Get-Content $localManifest -Raw
+                return $content | ConvertFrom-Json
+            }
+            catch {
+                Write-Warn "Failed to parse local manifest: $_"
+            }
+        }
+    }
+
+    # Fall back to GitHub
+    Write-Info "Fetching manifest from GitHub..."
+    try {
+        $response = Invoke-WebRequest -Uri $RemoteUrl -UseBasicParsing
+        return $response.Content | ConvertFrom-Json
+    }
+    catch {
+        Write-Host "  ERROR: Failed to load package manifest: $_" -ForegroundColor Red
+        exit 1
+    }
 }
 
 function Install-WingetPackage {
@@ -190,12 +160,34 @@ function Install-WingetPackage {
     }
 }
 
+function Install-WingetCategory {
+    param(
+        [array]$Packages,
+        [string]$CategoryName
+    )
+
+    if ($null -eq $Packages -or $Packages.Count -eq 0) {
+        return
+    }
+
+    foreach ($pkg in $Packages) {
+        Install-WingetPackage -Id $pkg.id -Name $pkg.name
+    }
+}
+
+# =============================================================================
+# LOAD PACKAGE MANIFEST
+# =============================================================================
+Write-Step "[1/8] Loading package manifest..."
+$manifest = Get-PackageManifest -LocalPath $ManifestPath -RemoteUrl $GithubManifestUrl
+Write-Success "Package manifest loaded"
+
 # =============================================================================
 # MAIN INSTALLATION
 # =============================================================================
 
 # Check for winget
-Write-Step "[1/7] Checking winget..."
+Write-Step "[2/8] Checking winget..."
 if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
     Write-Host "  ERROR: winget not found. Please install App Installer from Microsoft Store." -ForegroundColor Red
     exit 1
@@ -203,21 +195,25 @@ if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
 Write-Success "winget available"
 
 # Install GUI Applications
-Write-Step "[2/7] Installing GUI applications ($($wingetApps.Count) apps)..."
-foreach ($app in $wingetApps) {
-    Install-WingetPackage -Id $app.id -Name $app.name
+Write-Step "[3/8] Installing GUI applications..."
+$guiCategories = @("browsers", "development", "ai_llm", "communication", "microsoft_azure", "productivity", "fonts")
+foreach ($category in $guiCategories) {
+    $packages = $manifest.winget.$category
+    Install-WingetCategory -Packages $packages -CategoryName $category
 }
 
 # Install CLI Tools
-Write-Step "[3/7] Installing CLI tools ($($wingetCLI.Count) tools)..."
-foreach ($tool in $wingetCLI) {
-    Install-WingetPackage -Id $tool.id -Name $tool.name
+Write-Step "[4/8] Installing CLI tools..."
+$cliCategories = @("cli_core", "cli_languages", "cli_iac", "cli_kubernetes", "cli_azure", "cli_database", "cli_shell")
+foreach ($category in $cliCategories) {
+    $packages = $manifest.winget.$category
+    Install-WingetCategory -Packages $packages -CategoryName $category
 }
 
 # =============================================================================
 # LOCAL LLM SETUP
 # =============================================================================
-Write-Step "[4/7] Setting up Local LLM stack..."
+Write-Step "[5/8] Setting up Local LLM stack..."
 
 if ($DryRun) {
     Write-Info "[DRY RUN] Would configure Ollama"
@@ -226,9 +222,11 @@ if ($DryRun) {
 else {
     Write-Host ""
     Write-Host "  Recommended Ollama models:" -ForegroundColor Cyan
-    Write-Host "    ollama pull qwen2.5-coder:32b     # Best coding model" -ForegroundColor Gray
-    Write-Host "    ollama pull llama3.2:3b           # Fast, small model" -ForegroundColor Gray
-    Write-Host "    ollama pull llama3.3:70b          # Most capable" -ForegroundColor Gray
+    if ($manifest.ollama_models.recommended) {
+        foreach ($model in $manifest.ollama_models.recommended) {
+            Write-Host "    ollama pull $model" -ForegroundColor Gray
+        }
+    }
     Write-Host ""
     Write-Host "  Start Ollama: ollama serve" -ForegroundColor Gray
     Write-Host "  API endpoint: http://localhost:11434" -ForegroundColor Gray
@@ -237,7 +235,7 @@ else {
 # =============================================================================
 # PYTHON SETUP
 # =============================================================================
-Write-Step "[5/7] Configuring Python environment..."
+Write-Step "[6/8] Configuring Python environment..."
 
 if ($DryRun) {
     Write-Info "[DRY RUN] Would install pipx and poetry"
@@ -253,21 +251,25 @@ else {
         python -m pipx ensurepath
     }
 
-    # Install poetry via pipx
-    $poetryInstalled = pipx list 2>$null | Select-String "poetry"
-    if ($poetryInstalled) {
-        Write-Success "poetry already installed"
-    }
-    else {
-        Write-Info "Installing poetry..."
-        pipx install poetry
+    # Install packages via pipx
+    if ($manifest.pipx_packages) {
+        foreach ($pkg in $manifest.pipx_packages) {
+            $pkgInstalled = pipx list 2>$null | Select-String $pkg
+            if ($pkgInstalled) {
+                Write-Success "$pkg already installed"
+            }
+            else {
+                Write-Info "Installing $pkg..."
+                pipx install $pkg
+            }
+        }
     }
 }
 
 # =============================================================================
 # SHELL CONFIGURATION (oh-my-posh)
 # =============================================================================
-Write-Step "[6/7] Configuring PowerShell with oh-my-posh..."
+Write-Step "[7/8] Configuring PowerShell with oh-my-posh..."
 
 $ompConfigDir = "$env:USERPROFILE\.config\oh-my-posh"
 $ompConfig = "$ompConfigDir\bellows.omp.json"
@@ -285,7 +287,7 @@ else {
 
     # Download theme
     Write-Info "Downloading oh-my-posh theme..."
-    $themeUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/cli/bellows.omp.json"
+    $themeUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/cli/oh-my-posh/bellows.omp.json"
     try {
         Invoke-WebRequest -Uri $themeUrl -OutFile $ompConfig -UseBasicParsing
         Write-Success "Theme downloaded to $ompConfig"
@@ -336,32 +338,22 @@ Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 # =============================================================================
 # VS CODE EXTENSIONS
 # =============================================================================
-Write-Step "[7/7] Installing VS Code extensions..."
-
-$vscodeExtensions = @(
-    "ms-python.python"
-    "ms-python.vscode-pylance"
-    "ms-azuretools.vscode-docker"
-    "hashicorp.terraform"
-    "github.copilot"
-    "github.copilot-chat"
-    "continue.continue"
-    "ms-dotnettools.csharp"
-    "golang.go"
-    "esbenp.prettier-vscode"
-    "eamodio.gitlens"
-)
+Write-Step "[8/8] Installing VS Code extensions..."
 
 if ($DryRun) {
-    foreach ($ext in $vscodeExtensions) {
-        Write-Info "[DRY RUN] Would install extension: $ext"
+    if ($manifest.vscode_extensions) {
+        foreach ($ext in $manifest.vscode_extensions) {
+            Write-Info "[DRY RUN] Would install extension: $ext"
+        }
     }
 }
 else {
     if (Get-Command code -ErrorAction SilentlyContinue) {
-        foreach ($ext in $vscodeExtensions) {
-            Write-Info "Installing $ext..."
-            code --install-extension $ext --force 2>$null
+        if ($manifest.vscode_extensions) {
+            foreach ($ext in $manifest.vscode_extensions) {
+                Write-Info "Installing $ext..."
+                code --install-extension $ext --force 2>$null
+            }
         }
         Write-Success "VS Code extensions installed"
     }
