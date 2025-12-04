@@ -495,21 +495,15 @@ setup_ollama_models() {
         echo ""
     done
 
-    # Get default models from manifest
-    local default_models
-    default_models=$(echo "$PACKAGES_JSON" | jq -r '.ollama_models.default[]?' 2>/dev/null | tr '\n' ' ')
+    # Pull default models from manifest
+    log_info "Pulling default Ollama models..."
+    while IFS= read -r model; do
+        [[ -z "$model" ]] && continue
+        log_info "Pulling $model..."
+        ollama pull "$model" || log_warn "Failed to pull $model"
+    done < <(echo "$PACKAGES_JSON" | jq -r '.ollama_models.default[]?' 2>/dev/null)
 
-    read -p "Pull default models? ($default_models) [y/N]: " -n 1 -r < /dev/tty
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        while IFS= read -r model; do
-            [[ -z "$model" ]] && continue
-            log_info "Pulling $model..."
-            ollama pull "$model" || log_warn "Failed to pull $model"
-        done < <(echo "$PACKAGES_JSON" | jq -r '.ollama_models.default[]?' 2>/dev/null)
-
-        log_success "Models ready! Run: ollama run <model>"
-    fi
+    log_success "Models ready! Run: ollama run <model>"
 }
 
 # Combined LLM setup
@@ -521,12 +515,8 @@ setup_local_llm_stack() {
     install_llama_cpp
     install_mlx
 
-    # Optional: Open WebUI
-    read -p "Install Open WebUI (ChatGPT-like web interface)? [y/N]: " -n 1 -r < /dev/tty
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        install_open_webui
-    fi
+    # Install Open WebUI (ChatGPT-like web interface)
+    install_open_webui
 
     # Model recommendations
     setup_ollama_models
@@ -1018,38 +1008,25 @@ main() {
 
     # Configure shell prompts (oh-my-posh)
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Configure shell prompts?"
         log_info "[DRY RUN] Would install oh-my-zsh + plugins"
         log_info "[DRY RUN] Would download oh-my-posh theme from GitHub"
         log_info "[DRY RUN] Would create ~/.zshrc and PowerShell profile"
     else
-        read -p "Configure shell prompts (zsh + pwsh with oh-my-posh)? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            configure_shells
-        fi
+        configure_shells
     fi
 
     # Install VS Code extensions
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Install VS Code extensions?"
+        log_info "[DRY RUN] Would install VS Code extensions"
     else
-        read -p "Install VS Code extensions? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_vscode_extensions
-        fi
+        install_vscode_extensions
     fi
 
     # Install Edge extensions
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Configure Edge extensions?"
+        log_info "[DRY RUN] Would configure Edge extensions"
     else
-        read -p "Configure Microsoft Edge extensions? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_edge_extensions
-        fi
+        install_edge_extensions
     fi
 
     # Cleanup

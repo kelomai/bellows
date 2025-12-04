@@ -817,38 +817,25 @@ main() {
 
     # Configure shell prompts (oh-my-posh)
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Configure shell prompts?"
         log_info "[DRY RUN] Would install oh-my-zsh + plugins"
         log_info "[DRY RUN] Would download oh-my-posh theme from GitHub"
         log_info "[DRY RUN] Would create ~/.zshrc and PowerShell profile"
     else
-        read -p "Configure shell prompts (zsh + pwsh with oh-my-posh)? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            configure_shells
-        fi
+        configure_shells
     fi
 
     # Install VS Code extensions
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Install VS Code extensions?"
+        log_info "[DRY RUN] Would install VS Code extensions"
     else
-        read -p "Install VS Code extensions? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_vscode_extensions
-        fi
+        install_vscode_extensions
     fi
 
     # Install Edge extensions
     if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Configure Edge extensions?"
+        log_info "[DRY RUN] Would configure Edge extensions"
     else
-        read -p "Configure Microsoft Edge extensions? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            install_edge_extensions
-        fi
+        install_edge_extensions
     fi
 
     # Cleanup
