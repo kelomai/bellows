@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck jq
+
+      - name: Validate Bash scripts
+        run: |
+          echo "Validating Bash scripts..."
+          for script in mac-setup/*/install-*.sh ubuntu-setup/*/install-*.sh; do
+            if [[ -f "$script" ]]; then
+              echo "Checking $script"
+              bash -n "$script" || exit 1
+              shellcheck -e SC1091,SC2034,SC2086 "$script" || echo "Shellcheck warnings in $script"
+            fi
+          done
+          echo "Bash validation complete"
+
+      - name: Validate JSON manifests
+        run: |
+          echo "Validating JSON manifests..."
+          for json in mac-setup/*/packages.json; do
+            if [[ -f "$json" ]]; then
+              echo "Checking $json"
+              jq empty "$json" || exit 1
+            fi
+          done
+          echo "JSON validation complete"
+
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate script inventory
+        run: |
+          echo "# Bellows ${{ github.event.release.tag_name }}" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Scripts Included" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "### macOS" >> RELEASE_NOTES.md
+          echo "- \`mac-setup/llm-workstation/install-llm-workstation.sh\`" >> RELEASE_NOTES.md
+          echo "- \`mac-setup/dev-workstation/install-dev-workstation.sh\`" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "### Windows 11" >> RELEASE_NOTES.md
+          echo "- \`win11-setup/dev-workstation/Install-DevWorkstation.ps1\`" >> RELEASE_NOTES.md
+          echo "- \`win11-setup/client-workstation/Install-ClientWorkstation.ps1\`" >> RELEASE_NOTES.md
+          echo "- \`win11-setup/Debloat-Windows.ps1\`" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "### Ubuntu" >> RELEASE_NOTES.md
+          echo "- \`ubuntu-setup/dev-workstation/install-dev-workstation.sh\`" >> RELEASE_NOTES.md
+          echo "- \`ubuntu-setup/headless/install-headless.sh\`" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "## Quick Install" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "See [README.md](https://github.com/kelomai/bellows#quick-start) for installation commands." >> RELEASE_NOTES.md
+          cat RELEASE_NOTES.md
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
+
+  notify:
+    name: Notify Release
+    runs-on: ubuntu-latest
+    needs: [validate, build-docs]
+    steps:
+      - name: Release summary
+        run: |
+          echo "## Release ${{ github.event.release.tag_name }} Published"
+          echo ""
+          echo "Release Name: ${{ github.event.release.name }}"
+          echo "Release URL: ${{ github.event.release.html_url }}"
+          echo ""
+          echo "All validation checks passed!"

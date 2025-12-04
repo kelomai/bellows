@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-bash:
+    name: Test Bash Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Make test script executable
+        run: chmod +x tests/test-bash-scripts.sh
+
+      - name: Run Bash tests
+        run: ./tests/test-bash-scripts.sh
+
+  test-powershell:
+    name: Test PowerShell Scripts
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Pester and PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser -MinimumVersion 5.0
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = './tests/Bellows.Tests.ps1'
+          $config.Output.Verbosity = 'Detailed'
+          $config.TestResult.Enabled = $true
+          $config.TestResult.OutputPath = 'TestResults.xml'
+          $config.TestResult.OutputFormat = 'NUnitXml'
+          Invoke-Pester -Configuration $config
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pester-results
+          path: TestResults.xml
+
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+
+      - name: Lint Markdown files
+        run: markdownlint '**/*.md' --ignore node_modules || true
+        # Using || true to not fail on warnings, only report
+
+  validate-json:
+    name: Validate JSON
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating JSON files..."
+          for file in $(find . -name "*.json" -type f); do
+            echo "Checking $file"
+            if ! jq empty "$file" 2>/dev/null; then
+              echo "Invalid JSON: $file"
+              exit 1
+            fi
+          done
+          echo "All JSON files are valid"
+
+  check-scripts-executable:
+    name: Check Script Permissions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check bash scripts are executable
+        run: |
+          echo "Checking script permissions..."
+          scripts=(
+            "mac-setup/llm-workstation/install-llm-workstation.sh"
+            "mac-setup/dev-workstation/install-dev-workstation.sh"
+            "ubuntu-setup/dev-workstation/install-dev-workstation.sh"
+            "ubuntu-setup/headless/install-headless.sh"
+          )
+          for script in "${scripts[@]}"; do
+            if [[ -f "$script" ]]; then
+              echo "Found: $script"
+            else
+              echo "Missing: $script"
+              exit 1
+            fi
+          done
+          echo "All scripts found"

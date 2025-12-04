@@ -1,0 +1,139 @@
+# 🤝 Contributing to Bellows
+
+Thank you for your interest in contributing to Bellows! This document provides guidelines and instructions for contributing.
+
+## 📜 Code of Conduct
+
+Be respectful, inclusive, and constructive. We welcome contributors of all experience levels.
+
+## 💻 System Requirements
+
+Bellows scripts are designed for and tested on:
+
+| Platform | Minimum Version |
+|----------|-----------------|
+| 🍎 **macOS** | 26+ (Tahoe) |
+| 🐧 **Ubuntu** | 25+ (Plucky Puffin) |
+| 🪟 **Windows** | 11 |
+| ⚡ **PowerShell** | Core 7.5.4+ |
+
+> **Note:** PowerShell scripts require PowerShell Core (pwsh), not Windows PowerShell 5.x.
+
+## 🚀 How to Contribute
+
+### 🐛 Reporting Issues
+
+1. Check existing issues to avoid duplicates
+2. Use a clear, descriptive title
+3. Include:
+   - OS and version (Windows 11, macOS, Ubuntu)
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Relevant logs or screenshots
+
+### 📝 Submitting Changes
+
+1. **Fork** the repository
+2. **Create a branch** for your changes:
+   ```bash
+   git checkout -b feature/your-feature-name
+   # or
+   git checkout -b fix/issue-description
+   ```
+3. **Make your changes** following our coding standards
+4. **Test** your changes thoroughly
+5. **Commit** with clear messages:
+   ```bash
+   git commit -m "Add: description of new feature"
+   git commit -m "Fix: description of bug fix"
+   git commit -m "Update: description of update"
+   ```
+6. **Push** to your fork
+7. **Open a Pull Request** with:
+   - Clear description of changes
+   - Reference to related issues
+   - Screenshots if applicable
+
+## 📋 Coding Standards
+
+### 🪟 PowerShell Scripts
+
+- **Target PowerShell Core 7.5.4+** (not Windows PowerShell 5.x)
+- Add `#Requires -Version 7.5` at the top of scripts
+- Use `#Requires -RunAsAdministrator` when needed
+- Include proper help documentation (`.SYNOPSIS`, `.DESCRIPTION`, `.EXAMPLE`)
+- Follow PowerShell naming conventions (Verb-Noun)
+- Use `$ErrorActionPreference = "Continue"` for graceful error handling
+- Support `-DryRun` parameter for previewing changes
+
+### 🐧 Bash Scripts
+
+- Include shebang: `#!/usr/bin/env bash`
+- Use `set -euo pipefail` for strict mode
+- Support `--dry-run` flag
+- Use functions for modularity
+- Include clear logging with color output
+
+### ⚙️ General Guidelines
+
+- Keep scripts idempotent (safe to run multiple times)
+- Check for existing installations before installing
+- Provide clear, actionable error messages
+- Support both interactive and automated execution
+- Document all parameters and flags
+
+## 📂 Project Structure
+
+```
+bellows/
+├── mac-setup/                    # macOS workstation setup
+│   ├── llm-workstation/          # LLM workstation setup
+│   └── dev-workstation/          # Dev workstation setup
+├── win11-setup/                  # Windows 11 workstation setup
+│   ├── Debloat-Windows.ps1       # Windows debloat script
+│   ├── dev-workstation/          # Developer setup
+│   └── client-workstation/       # Client/business setup
+├── ubuntu-setup/                 # Ubuntu workstation setup
+│   ├── dev-workstation/          # Desktop setup
+│   └── headless/                 # CLI-only setup
+├── cli/                          # Shell themes and configs
+├── docs/                         # Documentation
+├── tests/                        # Script validation tests
+├── LICENSE                       # MIT License
+├── CONTRIBUTING.md               # This file
+└── README.md                     # Project overview
+```
+
+## 🧪 Testing
+
+Before submitting a PR:
+
+1. **Dry run** your scripts to ensure they preview correctly
+2. **Test on a fresh VM** when possible
+3. **Verify idempotency** by running scripts multiple times
+4. **Check for regressions** in existing functionality
+
+## 🔄 Pull Request Process
+
+1. Update documentation if needed
+2. Update READMEs for any changed scripts
+3. Ensure all tests pass
+4. Request review from maintainers
+5. Address feedback promptly
+
+## ➕ Adding New Scripts
+
+When adding a new setup script:
+
+1. Follow the existing naming conventions
+2. Include comprehensive help documentation
+3. Support dry-run mode
+4. Add entry to relevant README
+5. Update the main project README if needed
+
+## ❓ Questions?
+
+- Open an issue for questions about contributing
+- Tag it with `question` label
+
+🙏 Thank you for contributing to Bellows!
