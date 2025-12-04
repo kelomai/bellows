@@ -667,34 +667,6 @@ configure_shells() {
 }
 
 # =============================================================================
-# MACOS DEVELOPER SETTINGS
-# =============================================================================
-configure_macos() {
-    log_info "Configuring macOS developer settings..."
-
-    # Show hidden files in Finder
-    defaults write com.apple.finder AppleShowAllFiles -bool true
-
-    # Show path bar in Finder
-    defaults write com.apple.finder ShowPathbar -bool true
-
-    # Show status bar in Finder
-    defaults write com.apple.finder ShowStatusBar -bool true
-
-    # Disable press-and-hold for keys in favor of key repeat
-    defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
-
-    # Fast key repeat rate
-    defaults write NSGlobalDomain KeyRepeat -int 2
-    defaults write NSGlobalDomain InitialKeyRepeat -int 15
-
-    # Enable developer menu in Safari
-    defaults write com.apple.Safari IncludeDevelopMenu -bool true
-
-    log_success "macOS settings configured (restart Finder to apply)"
-}
-
-# =============================================================================
 # VSCODE EXTENSIONS
 # =============================================================================
 install_vscode_extensions() {
@@ -809,17 +781,6 @@ main() {
         log_info "[DRY RUN] Would configure Python (pipx, pyenv)"
     else
         setup_python
-    fi
-
-    # Configure macOS settings
-    if $DRY_RUN; then
-        log_info "[DRY RUN] Would prompt: Configure macOS developer settings?"
-    else
-        read -p "Configure macOS developer settings? [y/N]: " -n 1 -r < /dev/tty
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            configure_macos
-        fi
     fi
 
     # Configure shell prompts (oh-my-posh)
