@@ -23,24 +23,9 @@
       {"id": "OpenAI.ChatGPT", "name": "ChatGPT"},
       {"id": "Anthropic.Claude", "name": "Claude"}
     ],
-    "communication": [
-      {"id": "SlackTechnologies.Slack", "name": "Slack"},
-      {"id": "OpenWhisperSystems.Signal", "name": "Signal"},
-      {"id": "Telegram.TelegramDesktop", "name": "Telegram"},
-      {"id": "WhatsApp.WhatsApp", "name": "WhatsApp"}
-    ],
     "microsoft_azure": [
       {"id": "Microsoft.PowerShell", "name": "PowerShell 7"},
-      {"id": "Microsoft.AzureStorageExplorer", "name": "Azure Storage Explorer"},
-      {"id": "Microsoft.Office", "name": "Microsoft Office"},
-      {"id": "Microsoft.OneDrive", "name": "OneDrive"}
-    ],
-    "productivity": [
-      {"id": "AgileBits.1Password", "name": "1Password"},
-      {"id": "Notion.Notion", "name": "Notion"},
-      {"id": "Spotify.Spotify", "name": "Spotify"},
-      {"id": "TechSmith.Snagit", "name": "Snagit"},
-      {"id": "Raycast.Raycast", "name": "Raycast"}
+      {"id": "Microsoft.AzureStorageExplorer", "name": "Azure Storage Explorer"}
     ],
     "fonts": [
       {"id": "NerdFonts.FiraCode", "name": "Fira Code Nerd Font"},

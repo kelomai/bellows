@@ -109,9 +109,7 @@ irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/dev-works
 | **Terminals** | Windows Terminal, Warp |
 | **Containers** | Docker Desktop |
 | **LLM/AI Tools** | LM Studio, Ollama, ChatGPT, Claude |
-| **Communication** | Slack, Signal, Telegram, WhatsApp |
-| **Microsoft/Azure** | PowerShell 7, Azure Storage Explorer, Office, OneDrive |
-| **Productivity** | 1Password, Notion, Spotify, Snagit, Raycast |
+| **Microsoft/Azure** | PowerShell 7, Azure Storage Explorer |
 | **Fonts** | Fira Code Nerd Font, JetBrains Mono Nerd Font |
 
 ### CLI Tools

@@ -43,9 +43,10 @@ curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/dev-
 | **Containers** | Docker Desktop |
 | **Languages** | Python 3.13, Node.js, Go, .NET, OpenJDK 21 |
 | **IaC** | Terraform, Packer |
-| **Cloud** | Azure CLI, kubectl, kubelogin |
+| **Cloud** | Azure CLI, Azure Storage Explorer, kubectl, kubelogin |
 | **Security** | GitGuardian (ggshield) |
 | **Shell** | oh-my-zsh + oh-my-posh |
+| **Fonts** | FiraCode, Meslo, JetBrains Mono (Nerd Fonts) |
 
 ### 🧠 LLM Workstation Only
 

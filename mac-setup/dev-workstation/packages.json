@@ -25,28 +25,9 @@
       "beyond-compare",
       "warp"
     ],
-    "communication": [
-      "slack",
-      "signal",
-      "telegram",
-      "whatsapp"
-    ],
     "microsoft_azure": [
       "powershell",
-      "microsoft-azure-storage-explorer",
-      "microsoft-office"
-    ],
-    "productivity": [
-      "notion",
-      "1password-cli",
-      "adobe-acrobat-pro",
-      "spotify",
-      "snagit",
-      "raycast",
-      "rectangle",
-      "keepingyouawake",
-      "bitwarden",
-      "cleanmymac"
+      "microsoft-azure-storage-explorer"
     ],
     "fonts": [
       "font-fira-code-nerd-font",

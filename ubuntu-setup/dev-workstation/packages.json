@@ -74,7 +74,7 @@
     "languages": ["nodejs", "dotnet"],
     "cloud": ["azure-cli", "aws-cli", "gcloud-cli", "github-cli"],
     "devops": ["docker", "terraform", "kubectl", "helm", "k9s"],
-    "security": ["1password-cli", "ggshield"],
+    "security": ["ggshield"],
     "shell": ["oh-my-zsh", "oh-my-posh", "nerd-fonts"]
   },
 
