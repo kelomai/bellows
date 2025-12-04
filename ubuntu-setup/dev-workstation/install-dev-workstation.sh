@@ -33,7 +33,7 @@
 # Remote:
 #   wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/dev-workstation/install-dev-workstation.sh | bash
 #
-# Author: Bellows
+# Author: 🧙‍♂️ Kelomai (https://kelomai.io)
 # License: MIT
 # =============================================================================
 
@@ -180,7 +180,13 @@ has_third_party() {
 # START
 # =============================================================================
 
-echo "=== Ubuntu Development Environment Setup ===" | tee "$LOG_FILE"
+echo "╔═════════════════════════════════════════════╗" | tee "$LOG_FILE"
+echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║" | tee -a "$LOG_FILE"
+echo "║           https://kelomai.io                ║" | tee -a "$LOG_FILE"
+echo "╠═════════════════════════════════════════════╣" | tee -a "$LOG_FILE"
+echo "║    Ubuntu Development Environment Setup     ║" | tee -a "$LOG_FILE"
+echo "╚═════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
 echo "Started at: $(date)" | tee -a "$LOG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
 echo ""
@@ -536,3 +542,8 @@ log "TO UPDATE ALL PACKAGES:"
 log "  wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/update.sh | bash"
 log ""
 log "Log file saved to: $LOG_FILE"
+log ""
+echo "╔═════════════════════════════════════════════════════════╗" | tee -a "$LOG_FILE"
+echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" | tee -a "$LOG_FILE"
+echo "║              https://kelomai.io                         ║" | tee -a "$LOG_FILE"
+echo "╚═════════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"

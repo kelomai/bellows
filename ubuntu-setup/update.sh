@@ -5,10 +5,18 @@
 #   wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/update.sh | bash
 #
 # Updates all packages installed by setup.sh
+#
+# Author: 🧙‍♂️ Kelomai (https://kelomai.io)
+# License: MIT
 
 set -e
 
-echo "=== Ubuntu Development Environment Update ==="
+echo "╔═════════════════════════════════════════════╗"
+echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║"
+echo "║           https://kelomai.io                ║"
+echo "╠═════════════════════════════════════════════╣"
+echo "║    Ubuntu Development Environment Update    ║"
+echo "╚═════════════════════════════════════════════╝"
 echo ""
 echo "Started at: $(date)"
 echo ""
@@ -69,7 +77,6 @@ else
 fi
 
 echo ""
-echo "=== Update Complete ==="
 echo "Finished at: $(date)"
 echo ""
 
@@ -87,3 +94,10 @@ echo "  - Azure CLI: $(az --version 2>/dev/null | head -n1 || echo 'not installe
 echo "  - PowerShell: $(pwsh --version 2>/dev/null || echo 'not installed')"
 echo ""
 echo "NOTE: You may need to restart your terminal for some updates to take effect."
+echo ""
+echo "╔═════════════════════════════════════════════════════════╗"
+echo "║     ✅ Update complete!                                 ║"
+echo "╠═════════════════════════════════════════════════════════╣"
+echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║"
+echo "║              https://kelomai.io                         ║"
+echo "╚═════════════════════════════════════════════════════════╝"

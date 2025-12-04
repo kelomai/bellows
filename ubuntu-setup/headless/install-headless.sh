@@ -34,7 +34,7 @@
 # Remote:
 #   wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/headless/install-headless.sh | bash
 #
-# Author: Bellows
+# Author: 🧙‍♂️ Kelomai (https://kelomai.io)
 # License: MIT
 # =============================================================================
 
@@ -170,7 +170,13 @@ has_third_party() {
 # START
 # =============================================================================
 
-echo "=== Ubuntu Headless Server Setup ===" | tee "$LOG_FILE"
+echo "╔═════════════════════════════════════════════╗" | tee "$LOG_FILE"
+echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║" | tee -a "$LOG_FILE"
+echo "║           https://kelomai.io                ║" | tee -a "$LOG_FILE"
+echo "╠═════════════════════════════════════════════╣" | tee -a "$LOG_FILE"
+echo "║       Ubuntu Headless Server Setup          ║" | tee -a "$LOG_FILE"
+echo "╚═════════════════════════════════════════════╝" | tee -a "$LOG_FILE"
+echo "" | tee -a "$LOG_FILE"
 echo "Started at: $(date)" | tee -a "$LOG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
 echo ""
@@ -394,10 +400,6 @@ fi
 # =============================================================================
 
 log ""
-log "============================================"
-log "=== Installation Complete ==="
-log "============================================"
-log ""
 log "Finished at: $(date)"
 log ""
 log "✓ SUCCESSFUL (${#SUCCESSFUL_INSTALLS[@]}): ${SUCCESSFUL_INSTALLS[*]}"
@@ -414,3 +416,10 @@ log "  - SSH available on port 22"
 log ""
 log "CLAUDE CODE: claude"
 log "UPDATE: wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/update.sh | bash"
+log ""
+echo "╔═════════════════════════════════════════════════════════╗" | tee -a "$LOG_FILE"
+echo "║     ✅ Installation complete!                           ║" | tee -a "$LOG_FILE"
+echo "╠═════════════════════════════════════════════════════════╣" | tee -a "$LOG_FILE"
+echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" | tee -a "$LOG_FILE"
+echo "║              https://kelomai.io                         ║" | tee -a "$LOG_FILE"
+echo "╚═════════════════════════════════════════════════════════╝" | tee -a "$LOG_FILE"

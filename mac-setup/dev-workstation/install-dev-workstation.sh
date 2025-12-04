@@ -27,7 +27,7 @@
 # Remote:
 #   curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/dev-workstation/install-dev-workstation.sh | bash
 #
-# Author: Bellows
+# Author: 🧙‍♂️ Kelomai (https://kelomai.io)
 # License: MIT
 # =============================================================================
 
@@ -74,9 +74,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 if $DRY_RUN; then
-    echo "============================================="
-    echo "  DRY RUN MODE - No changes will be made"
-    echo "============================================="
+    echo "╔═════════════════════════════════════════════╗"
+    echo "║   🔍 DRY RUN MODE - No changes will be made ║"
+    echo "╚═════════════════════════════════════════════╝"
     echo ""
 fi
 
@@ -723,9 +723,12 @@ main() {
     # Handle --shells-only flag
     if $SHELLS_ONLY; then
         echo ""
-        echo "============================================="
-        echo "  Shell Configuration Only"
-        echo "============================================="
+        echo "╔═════════════════════════════════════════════╗"
+        echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║"
+        echo "║           https://kelomai.io                ║"
+        echo "╠═════════════════════════════════════════════╣"
+        echo "║         Shell Configuration Only            ║"
+        echo "╚═════════════════════════════════════════════╝"
         echo ""
 
         # Need to load manifest for zsh plugins
@@ -743,9 +746,12 @@ main() {
     fi
 
     echo ""
-    echo "============================================="
-    echo "  Mac Developer Workstation Setup"
-    echo "============================================="
+    echo "╔═════════════════════════════════════════════╗"
+    echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║"
+    echo "║           https://kelomai.io                ║"
+    echo "╠═════════════════════════════════════════════╣"
+    echo "║      Mac Developer Workstation Setup        ║"
+    echo "╚═════════════════════════════════════════════╝"
     echo ""
 
     # Install Homebrew first
@@ -845,25 +851,16 @@ main() {
     fi
 
     echo ""
-    echo "============================================="
-    log_success "Setup complete!"
-    echo "============================================="
-    echo ""
-    echo "Next steps:"
-    echo "  1. Restart your terminal (or run: source ~/.zshrc)"
-    echo "  2. Log out and back in for Docker group to take effect"
-    echo ""
-    echo "Useful commands:"
-    echo "  docker ps                        # List running containers"
-    echo "  kubectl get pods                 # List Kubernetes pods"
-    echo "  terraform init                   # Initialize Terraform"
-    echo "  az login                         # Login to Azure CLI"
-    echo "  gh auth login                    # Login to GitHub CLI"
-    echo ""
-    echo "Python environment:"
-    echo "  pyenv install 3.13               # Install Python version"
-    echo "  pyenv global 3.13                # Set global version"
-    echo "  poetry new myproject             # Create new project"
+    echo "╔═════════════════════════════════════════════════════════╗"
+    echo "║     ✅ Setup complete!                                  ║"
+    echo "╠═════════════════════════════════════════════════════════╣"
+    echo "║  Next steps:                                            ║"
+    echo "║    1. Restart your terminal (or run: source ~/.zshrc)   ║"
+    echo "║    2. Log out and back in for Docker group              ║"
+    echo "╠═════════════════════════════════════════════════════════╣"
+    echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║"
+    echo "║              https://kelomai.io                         ║"
+    echo "╚═════════════════════════════════════════════════════════╝"
     echo ""
 }
 

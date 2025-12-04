@@ -39,7 +39,7 @@
 .LINK
     https://github.com/kelomai/bellows
 .NOTES
-    Author: Bellows
+    Author: 🧙‍♂️ Kelomai (https://kelomai.io)
     License: MIT
 
     Remote execution:
@@ -60,15 +60,18 @@ $ErrorActionPreference = "Continue"
 $GithubManifestUrl = "https://raw.githubusercontent.com/$Repo/$Branch/win11-setup/client-workstation/packages.json"
 
 if ($DryRun) {
-    Write-Host "=============================================" -ForegroundColor Cyan
-    Write-Host "  DRY RUN MODE - No changes will be made" -ForegroundColor Cyan
-    Write-Host "=============================================" -ForegroundColor Cyan
+    Write-Host "╔═════════════════════════════════════════════╗" -ForegroundColor DarkGray
+    Write-Host "║   🔍 DRY RUN MODE - No changes will be made ║" -ForegroundColor DarkGray
+    Write-Host "╚═════════════════════════════════════════════╝" -ForegroundColor DarkGray
     Write-Host ""
 }
 
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host "  Windows 11 Client Workstation Setup" -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
+Write-Host "╔═════════════════════════════════════════════╗" -ForegroundColor DarkGray
+Write-Host "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║" -ForegroundColor DarkGray
+Write-Host "║           https://kelomai.io                ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║    Windows 11 Client Workstation Setup      ║" -ForegroundColor DarkGray
+Write-Host "╚═════════════════════════════════════════════╝" -ForegroundColor DarkGray
 Write-Host ""
 
 # =============================================================================
@@ -279,15 +282,14 @@ Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
 # COMPLETE
 # =============================================================================
 Write-Host ""
-Write-Host "=============================================" -ForegroundColor Green
-Write-Host "  Setup Complete!" -ForegroundColor Green
-Write-Host "=============================================" -ForegroundColor Green
-Write-Host ""
-Write-Host "Next steps:" -ForegroundColor Cyan
-Write-Host "  1. Restart PowerShell to load the new prompt" -ForegroundColor White
-Write-Host "  2. Sign into Microsoft 365 and OneDrive" -ForegroundColor White
-Write-Host "  3. Configure 1Password" -ForegroundColor White
-Write-Host ""
-Write-Host "Useful commands:" -ForegroundColor Cyan
-Write-Host "  winget upgrade --all     # Update all packages" -ForegroundColor Gray
+Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor DarkGray
+Write-Host "║     ✅ Setup complete!                                  ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║  Next steps:                                            ║" -ForegroundColor DarkGray
+Write-Host "║    1. Restart PowerShell to load the new prompt         ║" -ForegroundColor DarkGray
+Write-Host "║    2. Sign into Microsoft 365 and OneDrive              ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" -ForegroundColor DarkGray
+Write-Host "║              https://kelomai.io                         ║" -ForegroundColor DarkGray
+Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
 Write-Host ""

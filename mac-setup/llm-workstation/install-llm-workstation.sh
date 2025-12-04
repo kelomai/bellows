@@ -26,7 +26,7 @@
 # Remote:
 #   curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/llm-workstation/install-llm-workstation.sh | bash
 #
-# Author: Bellows
+# Author: 🧙‍♂️ Kelomai (https://kelomai.io)
 # License: MIT
 # =============================================================================
 
@@ -73,9 +73,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 if $DRY_RUN; then
-    echo "============================================="
-    echo "  DRY RUN MODE - No changes will be made"
-    echo "============================================="
+    echo "╔═════════════════════════════════════════════╗"
+    echo "║   🔍 DRY RUN MODE - No changes will be made ║"
+    echo "╚═════════════════════════════════════════════╝"
     echo ""
 fi
 
@@ -905,9 +905,12 @@ main() {
     # Handle --shells-only flag
     if $SHELLS_ONLY; then
         echo ""
-        echo "============================================="
-        echo "  Shell Configuration Only"
-        echo "============================================="
+        echo "╔═════════════════════════════════════════════╗"
+        echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║"
+        echo "║           https://kelomai.io                ║"
+        echo "╠═════════════════════════════════════════════╣"
+        echo "║         Shell Configuration Only            ║"
+        echo "╚═════════════════════════════════════════════╝"
         echo ""
 
         # Need to load manifest for zsh plugins
@@ -925,9 +928,12 @@ main() {
     fi
 
     echo ""
-    echo "============================================="
-    echo "  Mac Dev Workstation + Local LLM Setup"
-    echo "============================================="
+    echo "╔═════════════════════════════════════════════╗"
+    echo "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║"
+    echo "║           https://kelomai.io                ║"
+    echo "╠═════════════════════════════════════════════╣"
+    echo "║     Mac LLM Workstation Setup 🧠            ║"
+    echo "╚═════════════════════════════════════════════╝"
     echo ""
 
     # Install Homebrew first
@@ -1036,34 +1042,17 @@ main() {
     fi
 
     echo ""
-    echo "============================================="
-    log_success "Setup complete!"
-    echo "============================================="
-    echo ""
-    echo "Next steps:"
-    echo "  1. Restart your terminal (or run: source ~/.zshrc)"
-    echo "  2. Start Ollama: ollama serve"
-    echo "  3. Open WebUI: http://localhost:3000 (if installed)"
-    echo "  4. Open LM Studio for model management"
-    echo ""
-    echo "Useful Ollama commands:"
-    echo "  ollama list                      # Show downloaded models"
-    echo "  ollama run qwen2.5-coder:32b     # Chat with coding model"
-    echo "  ollama run llama3.2:3b           # Fast model for quick tasks"
-    echo "  ollama ps                        # Show running models"
-    echo "  ollama pull <model>              # Download a new model"
-    echo ""
-    echo "LLM Tools installed:"
-    echo "  - Ollama:     CLI + API at http://localhost:11434"
-    echo "  - MLX:        Apple Silicon native (fastest on Mac)"
-    echo "  - llama.cpp:  Direct GGUF inference (llama-cli)"
-    echo "  - LM Studio:  GUI for model management"
-    echo "  - Jan:        Privacy-focused chat app"
-    echo "  - Open WebUI: ChatGPT-like interface (Docker)"
-    echo ""
-    echo "MLX Quick Start:"
-    echo "  mlx_lm.generate --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --prompt 'Hello'"
-    echo "  mlx_lm.server --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --port 8080"
+    echo "╔═════════════════════════════════════════════════════════╗"
+    echo "║     ✅ Setup complete!                                  ║"
+    echo "╠═════════════════════════════════════════════════════════╣"
+    echo "║  Next steps:                                            ║"
+    echo "║    1. Restart your terminal (or run: source ~/.zshrc)   ║"
+    echo "║    2. Start Ollama: ollama serve                        ║"
+    echo "║    3. Open WebUI: http://localhost:3000                 ║"
+    echo "╠═════════════════════════════════════════════════════════╣"
+    echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║"
+    echo "║              https://kelomai.io                         ║"
+    echo "╚═════════════════════════════════════════════════════════╝"
     echo ""
 }
 
