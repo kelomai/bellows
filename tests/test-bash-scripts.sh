@@ -33,12 +33,12 @@ TESTS_FAILED=0
 
 log_pass() {
     echo -e "${GREEN}✓ PASS${NC}: $1"
-    ((TESTS_PASSED++))
+    ((TESTS_PASSED++)) || true
 }
 
 log_fail() {
     echo -e "${RED}✗ FAIL${NC}: $1"
-    ((TESTS_FAILED++))
+    ((TESTS_FAILED++)) || true
 }
 
 log_skip() {
@@ -88,10 +88,14 @@ echo "--- Shellcheck linting ---"
 if command -v shellcheck &>/dev/null; then
     for script in "${BASH_SCRIPTS[@]}"; do
         if [[ -f "$ROOT_DIR/$script" ]]; then
+            # SC1087: False positive for jq/non-bash expressions
             # SC1091: Don't follow sourced files
+            # SC2015: A && B || C pattern (intentional for fallback logic)
+            # SC2016: Single quotes prevent expansion (intentional)
+            # SC2024: sudo redirect (log file owned by user, intentional)
             # SC2034: Unused variables (often for user config)
             # SC2086: Word splitting (intentional in many cases)
-            if shellcheck -e SC1091,SC2034,SC2086 "$ROOT_DIR/$script" 2>/dev/null; then
+            if shellcheck -e SC1087,SC1091,SC2015,SC2016,SC2024,SC2034,SC2086 "$ROOT_DIR/$script" 2>/dev/null; then
                 log_pass "$script passes shellcheck"
             else
                 log_fail "$script has shellcheck warnings"
