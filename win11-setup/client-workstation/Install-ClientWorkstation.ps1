@@ -20,6 +20,10 @@
     Preview what would be installed without making changes
 .PARAMETER ManifestPath
     Path to a local packages.json file (optional, defaults to GitHub)
+.PARAMETER Repo
+    GitHub repository in org/repo format (default: kelomai/bellows)
+.PARAMETER Branch
+    Git branch name (default: main)
 .EXAMPLE
     .\Install-ClientWorkstation.ps1
     Run the full installation interactively
@@ -29,6 +33,9 @@
 .EXAMPLE
     .\Install-ClientWorkstation.ps1 -ManifestPath .\my-packages.json
     Use a custom package manifest
+.EXAMPLE
+    .\Install-ClientWorkstation.ps1 -Repo "myuser/bellows" -Branch "my-feature"
+    Test from a forked repo and branch
 .LINK
     https://github.com/kelomai/bellows
 .NOTES
@@ -41,14 +48,16 @@
 
 param(
     [switch]$DryRun,
-    [string]$ManifestPath
+    [string]$ManifestPath,
+    [string]$Repo = "kelomai/bellows",
+    [string]$Branch = "main"
 )
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 $ErrorActionPreference = "Continue"
-$GithubManifestUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/client-workstation/packages.json"
+$GithubManifestUrl = "https://raw.githubusercontent.com/$Repo/$Branch/win11-setup/client-workstation/packages.json"
 
 if ($DryRun) {
     Write-Host "=============================================" -ForegroundColor Cyan

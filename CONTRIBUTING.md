@@ -148,10 +148,20 @@ wget -qO- https://raw.githubusercontent.com/YOUR-USERNAME/bellows/feature/my-cha
 ./mac-setup/dev-workstation/install-dev-workstation.sh --repo YOUR-USERNAME/bellows --branch feature/my-changes
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+# Test from your fork
+.\win11-setup\dev-workstation\Install-DevWorkstation.ps1 -Repo "YOUR-USERNAME/bellows" -Branch "feature/my-changes"
+
+# Or for maintainers testing from kelomai repo
+.\win11-setup\dev-workstation\Install-DevWorkstation.ps1 -Branch "feature/my-changes"
+```
+
 **Testing from kelomai repo (maintainers):**
 
 ```bash
-# For branches on the main repo, only --branch is needed
+# For branches on the main repo, only -Branch is needed
 ./mac-setup/dev-workstation/install-dev-workstation.sh --branch feature/my-changes
 ```
 
