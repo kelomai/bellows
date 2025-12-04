@@ -87,37 +87,89 @@ CLI-only setup optimized for:
 - 🪟 WSL2 on Windows
 - 🐳 Docker containers
 
+## 🏗️ How It Works
+
+Bellows uses a **manifest-driven architecture** that separates *what* to install from *how* to install it:
+
+```text
+📄 packages.json          →       🔧 install script        →       ✅ Ready!
+(Define your tools)              (Automated setup)                 (Start coding)
+```
+
+### 📄 Package Manifests
+
+Each workstation has a `packages.json` file that defines everything to install:
+
+```json
+{
+  "casks": {
+    "browsers": ["firefox", "google-chrome"],
+    "development": ["visual-studio-code", "docker-desktop"],
+    "ai_llm": ["ollama", "lm-studio"]
+  },
+  "formulae": {
+    "languages": ["python@3.13", "node", "go"],
+    "iac": ["terraform", "packer"]
+  },
+  "vscode_extensions": ["github.copilot", "ms-python.python"],
+  "ollama_models": {
+    "default": ["llama3.2:3b", "qwen2.5-coder:32b"]
+  }
+}
+```
+
+### 🎛️ Customization
+
+Want to add or remove tools? It's easy:
+
+- ➕ **Add a package**: Add it to the appropriate category in `packages.json`
+- ➖ **Remove a package**: Delete the line from `packages.json`
+- 📁 **Create a profile**: Copy a folder and customize the manifest
+
+👉 **[See the full Customization Guide →](docs/CUSTOMIZATION.md)**
+
 ## 📁 Project Structure
 
 ```text
 bellows/
 ├── mac-setup/
-│   ├── llm-workstation/      # 🤖 Mac Ultra with LLM tools
-│   └── dev-workstation/      # 💻 Standard MacBook setup
+│   ├── llm-workstation/        # 🤖 Mac Ultra with LLM tools
+│   │   ├── install-*.sh        #    └── Setup script
+│   │   └── packages.json       #    └── Package manifest
+│   └── dev-workstation/        # 💻 Standard MacBook setup
+│       ├── install-*.sh
+│       └── packages.json
 ├── win11-setup/
-│   ├── dev-workstation/      # 👨‍💻 Windows developer setup
-│   ├── client-workstation/   # 💼 Windows business user setup
-│   └── Debloat-Windows.ps1   # 🧹 Remove bloatware
+│   ├── dev-workstation/        # 👨‍💻 Windows developer setup
+│   ├── client-workstation/     # 💼 Windows business user setup
+│   └── Debloat-Windows.ps1     # 🧹 Remove bloatware
 ├── ubuntu-setup/
-│   ├── dev-workstation/      # 🖥️ Ubuntu Desktop setup
-│   ├── headless/             # 💻 CLI-only setup
-│   └── update.sh             # 🔄 Update all packages
-├── cli/                      # 🎨 Shell themes (oh-my-posh)
-├── docs/                     # 📚 Detailed documentation
-└── tests/                    # 🧪 Script validation tests
+│   ├── dev-workstation/        # 🖥️ Ubuntu Desktop setup
+│   ├── headless/               # 💻 CLI-only setup
+│   └── update.sh               # 🔄 Update all packages
+├── cli/                        # 🎨 Shell themes (oh-my-posh)
+├── docs/                       # 📚 Detailed documentation
+└── tests/                      # 🧪 Script validation tests
 ```
 
 ## 📚 Documentation
 
 Detailed documentation for each script is available in the [docs/](docs/) folder:
 
-- 📖 [Mac LLM Workstation](docs/mac-llm-workstation.md) - Complete tool list and LLM setup
-- 📖 [Mac Dev Workstation](docs/mac-dev-workstation.md) - Standard dev environment
-- 📖 [Ubuntu Dev Workstation](docs/ubuntu-dev-workstation.md) - Desktop setup with GUI tools
-- 📖 [Ubuntu Headless](docs/ubuntu-headless.md) - CLI-only for Claude Code
-- 📖 [Windows Dev Workstation](docs/win11-dev-workstation.md) - Full developer setup
-- 📖 [Windows Client Workstation](docs/win11-client-workstation.md) - Business productivity
-- 📖 [Windows Debloat](docs/win11-debloat.md) - Remove bloatware and telemetry
+### 🎛️ Guides
+
+- 🔧 [Customization Guide](docs/CUSTOMIZATION.md) - **Add/remove packages, create custom profiles**
+- 🤝 [Contributing Guide](CONTRIBUTING.md) - How to contribute to Bellows
+
+### 📖 Setup Docs
+
+- 🍎 [Mac LLM Workstation](docs/mac-llm-workstation.md) - Complete tool list and LLM setup
+- 🍎 [Mac Dev Workstation](docs/mac-dev-workstation.md) - Standard dev environment
+- 🐧 [Ubuntu Dev Workstation](docs/ubuntu-dev-workstation.md) - Desktop setup with GUI tools
+- 🐧 [Ubuntu Headless](docs/ubuntu-headless.md) - CLI-only for Claude Code
+- 🪟 [Windows Dev Workstation](docs/win11-dev-workstation.md) - Full developer setup
+- 🪟 [Windows Client Workstation](docs/win11-client-workstation.md) - Business productivity
+- 🪟 [Windows Debloat](docs/win11-debloat.md) - Remove bloatware and telemetry
 
 ## 🤝 Contributing
 
