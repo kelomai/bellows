@@ -71,7 +71,6 @@
     "core": [
       "git",
       "gh",
-      "curl",
       "wget",
       "tree",
       "watch",
