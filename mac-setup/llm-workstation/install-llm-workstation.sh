@@ -177,7 +177,7 @@ load_packages() {
 
     # Download from GitHub
     log_info "Downloading packages.json from GitHub..."
-    PACKAGES_JSON=$(curl -fsSL "$GITHUB_RAW_BASE/mac-setup/packages.json") || {
+    PACKAGES_JSON=$(curl -fsSL "$GITHUB_RAW_BASE/mac-setup/llm-workstation/packages.json") || {
         log_error "Failed to download packages.json"
         exit 1
     }
