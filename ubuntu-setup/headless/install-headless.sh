@@ -26,6 +26,11 @@
 #
 # Target: Ubuntu Server / Headless Ubuntu Desktop / WSL2 / Docker containers
 #
+# Usage:
+#   ./install-headless.sh                        # Run full setup
+#   ./install-headless.sh --repo <org/repo>      # Use forked repo (default: kelomai/bellows)
+#   ./install-headless.sh --branch <branch>      # Use specific branch (default: main)
+#
 # Remote:
 #   wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/headless/install-headless.sh | bash
 #
@@ -35,8 +40,38 @@
 
 set -e
 
+# =============================================================================
+# COMMAND LINE FLAGS
+# =============================================================================
+GITHUB_REPO="kelomai/bellows"
+BRANCH="main"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --repo)
+            GITHUB_REPO="$2"
+            shift 2
+            ;;
+        --repo=*)
+            GITHUB_REPO="${1#*=}"
+            shift
+            ;;
+        --branch)
+            BRANCH="$2"
+            shift 2
+            ;;
+        --branch=*)
+            BRANCH="${1#*=}"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Configuration
-GITHUB_MANIFEST_URL="https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/headless/packages.json"
+GITHUB_MANIFEST_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}/ubuntu-setup/headless/packages.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="$HOME/ubuntu-headless-${TIMESTAMP}.log"

@@ -27,6 +27,10 @@
       {"id": "Microsoft.PowerShell", "name": "PowerShell 7"},
       {"id": "Microsoft.AzureStorageExplorer", "name": "Azure Storage Explorer"}
     ],
+    "security": [
+      {"id": "AgileBits.1Password", "name": "1Password"},
+      {"id": "AgileBits.1Password.CLI", "name": "1Password CLI"}
+    ],
     "fonts": [
       {"id": "NerdFonts.FiraCode", "name": "Fira Code Nerd Font"},
       {"id": "NerdFonts.JetBrainsMono", "name": "JetBrains Mono Nerd Font"}

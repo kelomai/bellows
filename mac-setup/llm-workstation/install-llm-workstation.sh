@@ -17,9 +17,11 @@
 #   - Shell customization (oh-my-zsh, oh-my-posh)
 #
 # Usage:
-#   ./install-llm-workstation.sh              # Run full setup
-#   ./install-llm-workstation.sh --dry-run    # Preview without changes
-#   ./install-llm-workstation.sh --shells-only # Only configure shells
+#   ./install-llm-workstation.sh                        # Run full setup
+#   ./install-llm-workstation.sh --dry-run              # Preview without changes
+#   ./install-llm-workstation.sh --shells-only          # Only configure shells
+#   ./install-llm-workstation.sh --repo <org/repo>      # Use forked repo (default: kelomai/bellows)
+#   ./install-llm-workstation.sh --branch <branch>      # Use specific branch (default: main)
 #
 # Remote:
 #   curl -fsSL https://raw.githubusercontent.com/kelomai/bellows/main/mac-setup/llm-workstation/install-llm-workstation.sh | bash
@@ -35,14 +37,37 @@ set -e
 # =============================================================================
 DRY_RUN=false
 SHELLS_ONLY=false
+GITHUB_REPO="kelomai/bellows"
+BRANCH="main"
 
-for arg in "$@"; do
-    case $arg in
+while [[ $# -gt 0 ]]; do
+    case $1 in
         --dry-run|-n)
             DRY_RUN=true
+            shift
             ;;
         --shells-only)
             SHELLS_ONLY=true
+            shift
+            ;;
+        --repo)
+            GITHUB_REPO="$2"
+            shift 2
+            ;;
+        --repo=*)
+            GITHUB_REPO="${1#*=}"
+            shift
+            ;;
+        --branch)
+            BRANCH="$2"
+            shift 2
+            ;;
+        --branch=*)
+            BRANCH="${1#*=}"
+            shift
+            ;;
+        *)
+            shift
             ;;
     esac
 done
@@ -62,13 +87,20 @@ if ! $DRY_RUN; then
     echo "This script requires administrator privileges for some operations."
     sudo -v
 
-    # Keep sudo alive in the background
-    while true; do
-        sudo -n true
-        sleep 60
-        kill -0 "$$" || exit
-    done 2>/dev/null &
+    # Keep sudo alive in the background (refresh every 50 seconds)
+    SUDO_KEEPALIVE_PID=
+    (
+        while true; do
+            sudo -n true 2>/dev/null
+            sleep 50
+        done
+    ) &
+    SUDO_KEEPALIVE_PID=$!
+    trap 'kill $SUDO_KEEPALIVE_PID 2>/dev/null' EXIT
 fi
+
+# Skip Gatekeeper quarantine prompts for Homebrew casks
+export HOMEBREW_CASK_OPTS="--no-quarantine"
 
 # Helper function to run or simulate commands
 run_cmd() {
@@ -98,7 +130,7 @@ log_info "Architecture: $(uname -m)"
 # =============================================================================
 # PACKAGE MANIFEST
 # =============================================================================
-GITHUB_RAW_BASE="https://raw.githubusercontent.com/kelomai/bellows/main"
+GITHUB_RAW_BASE="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || pwd)"
 PACKAGES_JSON=""
 

@@ -113,6 +113,55 @@ Before submitting a PR:
 3. **Verify idempotency** by running scripts multiple times
 4. **Check for regressions** in existing functionality
 
+### Testing with Forks and Feature Branches
+
+All install scripts support `--repo` and `--branch` flags to fetch remote resources (like `packages.json`) from your fork and branch instead of `kelomai/bellows:main`. This allows contributors to test changes before submitting a PR.
+
+**Flags:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--repo <org/repo>` | `kelomai/bellows` | GitHub repository (supports forks) |
+| `--branch <branch>` | `main` | Git branch name |
+
+**Testing from your fork:**
+
+```bash
+# 1. Fork the repo on GitHub, then clone your fork
+git clone https://github.com/YOUR-USERNAME/bellows.git
+cd bellows
+
+# 2. Create and push your feature branch
+git checkout -b feature/my-changes
+git add .
+git commit -m "Add: my changes"
+git push -u origin feature/my-changes
+
+# 3. Test remote install from your fork
+# macOS:
+curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/bellows/feature/my-changes/mac-setup/dev-workstation/install-dev-workstation.sh | bash -s -- --repo YOUR-USERNAME/bellows --branch feature/my-changes
+
+# Ubuntu:
+wget -qO- https://raw.githubusercontent.com/YOUR-USERNAME/bellows/feature/my-changes/ubuntu-setup/dev-workstation/install-dev-workstation.sh | bash -s -- --repo YOUR-USERNAME/bellows --branch feature/my-changes
+
+# Or run locally with flags:
+./mac-setup/dev-workstation/install-dev-workstation.sh --repo YOUR-USERNAME/bellows --branch feature/my-changes
+```
+
+**Testing from kelomai repo (maintainers):**
+
+```bash
+# For branches on the main repo, only --branch is needed
+./mac-setup/dev-workstation/install-dev-workstation.sh --branch feature/my-changes
+```
+
+**What these flags do:**
+
+- `--repo` sets the GitHub org/repo for fetching remote resources
+- `--branch` sets the branch name
+- Remote resources (`packages.json`, themes, etc.) are fetched from the specified repo/branch
+- Allows full end-to-end testing without merging to main
+
 ## 🔄 Pull Request Process
 
 1. Update documentation if needed

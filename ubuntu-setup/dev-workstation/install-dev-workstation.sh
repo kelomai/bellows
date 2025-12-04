@@ -25,6 +25,11 @@
 #
 # Note: For headless servers (no GUI), use headless/install-headless.sh instead.
 #
+# Usage:
+#   ./install-dev-workstation.sh                        # Run full setup
+#   ./install-dev-workstation.sh --repo <org/repo>      # Use forked repo (default: kelomai/bellows)
+#   ./install-dev-workstation.sh --branch <branch>      # Use specific branch (default: main)
+#
 # Remote:
 #   wget -qO- https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/dev-workstation/install-dev-workstation.sh | bash
 #
@@ -34,8 +39,38 @@
 
 set -e
 
+# =============================================================================
+# COMMAND LINE FLAGS
+# =============================================================================
+GITHUB_REPO="kelomai/bellows"
+BRANCH="main"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --repo)
+            GITHUB_REPO="$2"
+            shift 2
+            ;;
+        --repo=*)
+            GITHUB_REPO="${1#*=}"
+            shift
+            ;;
+        --branch)
+            BRANCH="$2"
+            shift 2
+            ;;
+        --branch=*)
+            BRANCH="${1#*=}"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Configuration
-GITHUB_MANIFEST_URL="https://raw.githubusercontent.com/kelomai/bellows/main/ubuntu-setup/dev-workstation/packages.json"
+GITHUB_MANIFEST_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}/ubuntu-setup/dev-workstation/packages.json"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd 2>/dev/null || pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 LOG_FILE="$HOME/ubuntu-setup-${TIMESTAMP}.log"

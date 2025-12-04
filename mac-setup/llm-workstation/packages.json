@@ -37,6 +37,10 @@
       "powershell",
       "microsoft-azure-storage-explorer"
     ],
+    "security": [
+      "1password",
+      "1password-cli"
+    ],
     "fonts": [
       "font-fira-code-nerd-font",
       "font-meslo-lg-nerd-font",
