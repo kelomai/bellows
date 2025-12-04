@@ -141,30 +141,5 @@
     "poetry",
     "httpie",
     "litellm"
-  ],
-
-  "ollama_models": {
-    "default": [
-      "llama3.2:3b",
-      "qwen2.5-coder:32b"
-    ],
-    "coding": [
-      "qwen2.5-coder:32b",
-      "deepseek-coder-v2:16b",
-      "codellama:34b"
-    ],
-    "general": [
-      "llama3.3:70b-instruct-q4_K_M",
-      "qwen2.5:32b",
-      "mixtral:8x7b"
-    ],
-    "fast": [
-      "llama3.2:3b",
-      "qwen2.5-coder:7b"
-    ],
-    "specialized": [
-      "nomic-embed-text",
-      "llava:34b"
-    ]
-  }
+  ]
 }

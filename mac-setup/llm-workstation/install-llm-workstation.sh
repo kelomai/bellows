@@ -379,34 +379,6 @@ install_mlx() {
     fi
 }
 
-setup_mlx_models() {
-    echo ""
-    echo "============================================="
-    echo "  MLX Models (Apple Silicon Optimized)"
-    echo "============================================="
-    echo ""
-    log_info "MLX models run natively on Apple Silicon - often faster than Ollama!"
-    echo ""
-    echo "MLX models are on Hugging Face under 'mlx-community':"
-    echo ""
-    echo "  Download models with:"
-    echo "    huggingface-cli download mlx-community/Qwen2.5-Coder-32B-Instruct-4bit"
-    echo "    huggingface-cli download mlx-community/Meta-Llama-3.1-70B-Instruct-4bit"
-    echo "    huggingface-cli download mlx-community/DeepSeek-Coder-V2-Lite-Instruct-4bit"
-    echo ""
-    echo "  Run models with mlx-lm:"
-    echo "    mlx_lm.generate --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --prompt 'Hello'"
-    echo ""
-    echo "  Or start an OpenAI-compatible server:"
-    echo "    mlx_lm.server --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --port 8080"
-    echo ""
-    echo "  Popular MLX models for 96GB:"
-    echo "    - mlx-community/Qwen2.5-Coder-32B-Instruct-4bit    (18GB)"
-    echo "    - mlx-community/Meta-Llama-3.1-70B-Instruct-4bit   (40GB)"
-    echo "    - mlx-community/Mixtral-8x7B-Instruct-v0.1-4bit    (26GB)"
-    echo "    - mlx-community/deepseek-coder-33b-instruct-4bit   (18GB)"
-    echo ""
-}
 
 # Ollama - Primary LLM runtime with OpenAI-compatible API
 install_ollama() {
@@ -461,52 +433,6 @@ install_open_webui() {
     fi
 }
 
-# Pull recommended models for 96GB Mac Studio Ultra
-setup_ollama_models() {
-    if ! command -v ollama &>/dev/null; then
-        log_warn "Ollama not installed, skipping model setup"
-        return
-    fi
-
-    # Start ollama service if not running
-    if ! pgrep -x "ollama" > /dev/null; then
-        log_info "Starting Ollama service..."
-        ollama serve &>/dev/null &
-        sleep 3
-    fi
-
-    echo ""
-    echo "============================================="
-    echo "  LLM Models for Mac Studio Ultra (96GB)"
-    echo "============================================="
-    echo ""
-    log_info "With 96GB unified memory, you can run large models!"
-    echo ""
-    echo "AVAILABLE MODELS (from manifest):"
-    echo ""
-
-    # Display models from manifest by category
-    for category in coding general fast specialized; do
-        # Capitalize first letter (bash 3 compatible)
-        cap_category="$(echo "$category" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
-        echo "  $cap_category Models:"
-        echo "$PACKAGES_JSON" | jq -r ".ollama_models.$category[]?" 2>/dev/null | while read -r model; do
-            [[ -z "$model" ]] && continue
-            echo "    ollama pull $model"
-        done
-        echo ""
-    done
-
-    # Pull default models from manifest
-    log_info "Pulling default Ollama models..."
-    while IFS= read -r model; do
-        [[ -z "$model" ]] && continue
-        log_info "Pulling $model..."
-        ollama pull "$model" || log_warn "Failed to pull $model"
-    done < <(echo "$PACKAGES_JSON" | jq -r '.ollama_models.default[]?' 2>/dev/null)
-
-    log_success "Models ready! Run: ollama run <model>"
-}
 
 # Combined LLM setup
 setup_local_llm_stack() {
@@ -519,10 +445,6 @@ setup_local_llm_stack() {
 
     # Install Open WebUI (ChatGPT-like web interface)
     install_open_webui
-
-    # Model recommendations
-    setup_ollama_models
-    setup_mlx_models
 }
 
 # =============================================================================
@@ -1046,12 +968,36 @@ main() {
     echo ""
     echo "╔═════════════════════════════════════════════════════════╗"
     echo "║     ✅ Setup complete!                                  ║"
-    echo "╠═════════════════════════════════════════════════════════╣"
-    echo "║  Next steps:                                            ║"
-    echo "║    1. Restart your terminal (or run: source ~/.zshrc)   ║"
-    echo "║    2. Start Ollama: ollama serve                        ║"
-    echo "║    3. Open WebUI: http://localhost:3000                 ║"
-    echo "╠═════════════════════════════════════════════════════════╣"
+    echo "╚═════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "NEXT STEPS:"
+    echo ""
+    echo "  1. Restart your terminal (or run: source ~/.zshrc)"
+    echo ""
+    echo "  2. Download a model (MLX is fastest on Apple Silicon):"
+    echo ""
+    echo "     MLX (recommended for Mac):"
+    echo "       huggingface-cli download mlx-community/Qwen2.5-Coder-32B-Instruct-4bit"
+    echo ""
+    echo "     Ollama (easier, good ecosystem):"
+    echo "       ollama pull qwen2.5-coder:32b"
+    echo ""
+    echo "  3. Run your model:"
+    echo ""
+    echo "     MLX:"
+    echo "       mlx_lm.generate --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --prompt 'Hello'"
+    echo "       mlx_lm.server --model mlx-community/Qwen2.5-Coder-32B-Instruct-4bit --port 8080"
+    echo ""
+    echo "     Ollama:"
+    echo "       ollama run qwen2.5-coder:32b"
+    echo ""
+    echo "  4. Use with VS Code:"
+    echo "     - Continue extension is installed"
+    echo "     - Configure it to use your local model (MLX server or Ollama)"
+    echo ""
+    echo "  5. Web UI: http://localhost:3000 (Open WebUI, if Docker is running)"
+    echo ""
+    echo "╔═════════════════════════════════════════════════════════╗"
     echo "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║"
     echo "║              https://kelomai.io                         ║"
     echo "╚═════════════════════════════════════════════════════════╝"
