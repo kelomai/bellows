@@ -150,27 +150,31 @@ function Get-PackageManifest {
 function Install-WingetPackage {
     param(
         [string]$Id,
-        [string]$Name
+        [string]$Name,
+        [int]$Current,
+        [int]$Total
     )
 
+    $progress = "[$Current/$Total]"
+
     if ($DryRun) {
-        Write-Info "[DRY RUN] Would install: $Name ($Id)"
+        Write-Info "$progress [DRY RUN] Would install: $Name ($Id)"
         return
     }
 
     # Check if already installed
     $installed = winget list --id $Id 2>$null | Select-String $Id
     if ($installed) {
-        Write-Success "$Name already installed"
+        Write-Success "$progress $Name already installed"
     }
     else {
-        Write-Info "Installing $Name..."
-        winget install --id $Id --accept-package-agreements --accept-source-agreements --silent
+        Write-Host "  $progress Installing $Name..." -ForegroundColor Cyan -NoNewline
+        winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Write-Success "$Name installed"
+            Write-Host " Done" -ForegroundColor Green
         }
         else {
-            Write-Warn "Failed to install $Name"
+            Write-Host " Failed" -ForegroundColor Yellow
         }
     }
 }
@@ -211,10 +215,25 @@ Write-Success "winget available"
 
 # Install Applications
 Write-Step "[3/4] Installing applications..."
+
+# Collect all packages first to show total count
+$allPackages = @()
 $categories = @("browsers", "microsoft", "communication", "productivity", "utilities", "fonts", "shell")
 foreach ($category in $categories) {
     $packages = $manifest.winget.$category
-    Install-WingetCategory -Packages $packages -CategoryName $category
+    if ($packages) {
+        $allPackages += $packages
+    }
+}
+
+$totalPackages = $allPackages.Count
+Write-Info "Found $totalPackages packages to install"
+Write-Host ""
+
+$current = 0
+foreach ($pkg in $allPackages) {
+    $current++
+    Install-WingetPackage -Id $pkg.id -Name $pkg.name -Current $current -Total $totalPackages
 }
 
 # =============================================================================
