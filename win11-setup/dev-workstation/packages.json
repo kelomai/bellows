@@ -86,13 +86,5 @@
   "pipx_packages": [
     "poetry",
     "ggshield"
-  ],
-
-  "ollama_models": {
-    "recommended": [
-      "qwen2.5-coder:32b",
-      "llama3.2:3b",
-      "llama3.3:70b"
-    ]
-  }
+  ]
 }

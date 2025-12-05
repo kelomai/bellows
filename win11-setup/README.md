@@ -19,7 +19,21 @@ win11-setup/
 
 ## Quick Start
 
-### Developer Workstation
+### Step 1: Run Debloat First (Recommended)
+
+**Always run debloat before installing a workstation.** This removes Windows bloatware, telemetry, and unnecessary services for a cleaner base.
+
+```powershell
+# Run as Administrator
+.\Debloat-Windows.ps1
+
+# Remote execution
+irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-Windows.ps1 | iex
+```
+
+### Step 2: Choose Your Workstation Type
+
+#### Developer Workstation
 
 Full development environment with programming languages, containers, and local LLM stack.
 
@@ -34,7 +48,7 @@ Full development environment with programming languages, containers, and local L
 irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/dev-workstation/Install-DevWorkstation.ps1 | iex
 ```
 
-### Client Workstation
+#### Client Workstation
 
 Productivity-focused setup for general business use. No development tools.
 
@@ -47,18 +61,6 @@ Productivity-focused setup for general business use. No development tools.
 
 # Remote execution
 irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/client-workstation/Install-ClientWorkstation.ps1 | iex
-```
-
-### Windows Debloat (Common)
-
-Run before either setup to remove bloatware and telemetry.
-
-```powershell
-# Run as Administrator
-.\Debloat-Windows.ps1
-
-# Remote execution
-irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-Windows.ps1 | iex
 ```
 
 ---

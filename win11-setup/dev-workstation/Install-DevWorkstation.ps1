@@ -228,20 +228,10 @@ foreach ($category in $cliCategories) {
 Write-Step "[5/8] Setting up Local LLM stack..."
 
 if ($DryRun) {
-    Write-Info "[DRY RUN] Would configure Ollama"
-    Write-Info "[DRY RUN] Would display model recommendations"
+    Write-Info "[DRY RUN] Would install Ollama and LM Studio"
 }
 else {
-    Write-Host ""
-    Write-Host "  Recommended Ollama models:" -ForegroundColor Cyan
-    if ($manifest.ollama_models.recommended) {
-        foreach ($model in $manifest.ollama_models.recommended) {
-            Write-Host "    ollama pull $model" -ForegroundColor Gray
-        }
-    }
-    Write-Host ""
-    Write-Host "  Start Ollama: ollama serve" -ForegroundColor Gray
-    Write-Host "  API endpoint: http://localhost:11434" -ForegroundColor Gray
+    Write-Success "Ollama and LM Studio installed (see end instructions for model downloads)"
 }
 
 # =============================================================================
@@ -380,11 +370,28 @@ else {
 Write-Host ""
 Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor DarkGray
 Write-Host "║     ✅ Setup complete!                                  ║" -ForegroundColor DarkGray
-Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
-Write-Host "║  Next steps:                                            ║" -ForegroundColor DarkGray
-Write-Host "║    1. Restart PowerShell to load oh-my-posh             ║" -ForegroundColor DarkGray
-Write-Host "║    2. Start Ollama: ollama serve                        ║" -ForegroundColor DarkGray
-Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
+Write-Host ""
+Write-Host "NEXT STEPS:" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "  1. Restart PowerShell to load oh-my-posh" -ForegroundColor White
+Write-Host ""
+Write-Host "  2. Download a model for local LLM:" -ForegroundColor White
+Write-Host ""
+Write-Host "     Ollama:" -ForegroundColor Yellow
+Write-Host "       ollama pull qwen2.5-coder:32b" -ForegroundColor Gray
+Write-Host "       ollama pull llama3.2:3b" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  3. Run your model:" -ForegroundColor White
+Write-Host ""
+Write-Host "       ollama serve              # Start the server" -ForegroundColor Gray
+Write-Host "       ollama run qwen2.5-coder  # Chat with model" -ForegroundColor Gray
+Write-Host ""
+Write-Host "  4. Use with VS Code:" -ForegroundColor White
+Write-Host "     - Continue extension is installed" -ForegroundColor Gray
+Write-Host "     - Configure it to use Ollama at http://localhost:11434" -ForegroundColor Gray
+Write-Host ""
+Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor DarkGray
 Write-Host "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" -ForegroundColor DarkGray
 Write-Host "║              https://kelomai.io                         ║" -ForegroundColor DarkGray
 Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
