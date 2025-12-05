@@ -7,7 +7,7 @@
       {"id": "Google.Chrome", "name": "Chrome"}
     ],
     "microsoft": [
-      {"id": "Microsoft.Office", "name": "Microsoft Office"},
+      {"id": "Microsoft.Office", "name": "Microsoft 365 Apps"},
       {"id": "Microsoft.OneDrive", "name": "OneDrive"},
       {"id": "Microsoft.PowerShell", "name": "PowerShell 7"}
     ],

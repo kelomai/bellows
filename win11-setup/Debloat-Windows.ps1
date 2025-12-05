@@ -285,10 +285,37 @@ Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentD
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SubscribedContent-353698Enabled" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" -Name "SystemPaneSuggestionsEnabled" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 
-# Disable Start Menu suggestions
-Write-Host "  Disabling Start Menu suggestions..." -ForegroundColor Gray
+# Disable Start Menu suggestions and promoted apps
+Write-Host "  Disabling Start Menu suggestions and promoted apps..." -ForegroundColor Gray
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_IrisRecommendations" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "Start_AccountNotifications" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+
+# Disable all SubscribedContent (promoted apps, suggestions, store promotions)
+$cdmPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
+$subscribedContentIds = @(
+	"SubscribedContent-310093Enabled"    # Windows Welcome Experience
+	"SubscribedContent-314563Enabled"    # My People suggestions
+	"SubscribedContent-338380Enabled"    # Start Menu suggestions
+	"SubscribedContent-338381Enabled"    # Start Menu suggestions (tile)
+	"SubscribedContent-338387Enabled"    # Spotlight lock screen suggestions
+	"SubscribedContent-338388Enabled"    # Start Menu suggestions
+	"SubscribedContent-338389Enabled"    # Tips and suggestions
+	"SubscribedContent-338393Enabled"    # Suggested content in Settings
+	"SubscribedContent-353694Enabled"    # Suggested content in Settings
+	"SubscribedContent-353696Enabled"    # Suggested content in Settings
+	"SubscribedContent-353698Enabled"    # Timeline suggestions
+	"SubscribedContent-88000326Enabled"  # Start Menu promoted apps (LinkedIn, etc.)
+)
+foreach ($id in $subscribedContentIds) {
+	Set-ItemProperty -Path $cdmPath -Name $id -Type DWord -Value 0 -ErrorAction SilentlyContinue
+}
+
+# Disable feature management experimentation (prevents Microsoft from re-enabling promotions)
+if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds")) {
+	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Force | Out-Null
+}
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "AllowBuildPreview" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PreviewBuilds" -Name "EnableExperimentation" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 
 Write-Host "  ✓ Consumer features disabled" -ForegroundColor Green
 Write-Host ""
@@ -462,6 +489,17 @@ if ($?) {
 	Set-ItemProperty -Path $explorerPath -Name "Start_IrisRecommendations" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 	Set-ItemProperty -Path $explorerPath -Name "Start_AccountNotifications" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 
+	# All SubscribedContent IDs for default profile
+	$defaultSubscribedContentIds = @(
+		"SubscribedContent-310093Enabled", "SubscribedContent-314563Enabled", "SubscribedContent-338380Enabled",
+		"SubscribedContent-338381Enabled", "SubscribedContent-338387Enabled", "SubscribedContent-338388Enabled",
+		"SubscribedContent-338389Enabled", "SubscribedContent-338393Enabled", "SubscribedContent-353694Enabled",
+		"SubscribedContent-353696Enabled", "SubscribedContent-353698Enabled", "SubscribedContent-88000326Enabled"
+	)
+	foreach ($id in $defaultSubscribedContentIds) {
+		Set-ItemProperty -Path $cdmPath -Name $id -Type DWord -Value 0 -ErrorAction SilentlyContinue
+	}
+
 	# Search settings
 	Write-Host "  Applying search settings to default profile..." -ForegroundColor Gray
 	$searchPath = "Registry::$tempKey\SOFTWARE\Microsoft\Windows\CurrentVersion\Search"
@@ -546,6 +584,29 @@ Write-Host "  Clearing Start Menu cache..." -ForegroundColor Gray
 $startCache = "$env:LOCALAPPDATA\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\TempState"
 if (Test-Path $startCache) {
 	Remove-Item -Path "$startCache\*" -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Clear CloudContent cache (removes cached promoted app data)
+Write-Host "  Clearing cloud content cache..." -ForegroundColor Gray
+$cloudContentCache = "$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState"
+if (Test-Path $cloudContentCache) {
+	Remove-Item -Path "$cloudContentCache\*" -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Clear Start Menu layout database
+$startLayoutDb = "$env:LOCALAPPDATA\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\LocalState"
+if (Test-Path $startLayoutDb) {
+	Get-ChildItem -Path $startLayoutDb -Filter "*.db" -ErrorAction SilentlyContinue | ForEach-Object {
+		Write-Host "  Removing: $($_.Name)" -ForegroundColor Gray
+		Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+	}
+}
+
+# Remove ContentDeliveryManager staged apps (pending promotions)
+Write-Host "  Removing staged promotional content..." -ForegroundColor Gray
+$stagedContent = "$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\ContentManagementSDK"
+if (Test-Path $stagedContent) {
+	Remove-Item -Path "$stagedContent\*" -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "  ✓ Promoted app shortcuts removed" -ForegroundColor Green
