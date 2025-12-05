@@ -75,6 +75,8 @@ $bloatware = @(
 	"Microsoft.WindowsFeedbackHub"
 	"Microsoft.WindowsMaps"
 	"Microsoft.WindowsSoundRecorder"
+	"Microsoft.GamingApp"
+	"Microsoft.GamingServices"
 	"Microsoft.Xbox.TCUI"
 	"Microsoft.XboxApp"
 	"Microsoft.XboxGameOverlay"
@@ -86,6 +88,7 @@ $bloatware = @(
 	"Microsoft.ZuneVideo"
 	"MicrosoftTeams"
 	"Microsoft.Teams"
+	"Microsoft.OutlookForWindows"
 	"Clipchamp.Clipchamp"
 	"*ActiproSoftwareLLC*"
 	"*AdobeSystemsIncorporated.AdobePhotoshopExpress*"
@@ -99,6 +102,7 @@ $bloatware = @(
 	"*SpotifyAB.SpotifyMusic*"
 	"*TikTok*"
 	"*Twitter*"
+	"*LinkedIn*"
 	"*Wunderlist*"
 	"*Flipboard*"
 	"*Disney*"
@@ -162,6 +166,30 @@ if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Force | Out-Null
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -Name "DisableFileSyncNGSC" -Type DWord -Value 1
+
+# Reset shell folders to local paths (fixes "location not available" after OneDrive removal)
+Write-Host "  Resetting shell folder paths to local..." -ForegroundColor Gray
+$userProfile = $env:USERPROFILE
+$shellFolders = @{
+	"Desktop" = "$userProfile\Desktop"
+	"Personal" = "$userProfile\Documents"
+	"My Pictures" = "$userProfile\Pictures"
+	"My Video" = "$userProfile\Videos"
+	"My Music" = "$userProfile\Music"
+	"{F42EE2D3-909F-4907-8871-4C22FC0BF756}" = "$userProfile\Documents"  # Documents GUID
+	"{0DDD015D-B06C-45D5-8C4C-F59713854639}" = "$userProfile\Pictures"   # Pictures GUID
+}
+
+foreach ($folder in $shellFolders.GetEnumerator()) {
+	$localPath = $folder.Value
+	# Create local folder if it doesn't exist
+	if (!(Test-Path $localPath)) {
+		New-Item -ItemType Directory -Path $localPath -Force | Out-Null
+	}
+	# Update User Shell Folders registry
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" -Name $folder.Key -Value $localPath -ErrorAction SilentlyContinue
+	Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" -Name $folder.Key -Value $localPath -ErrorAction SilentlyContinue
+}
 
 Write-Host "  ✓ OneDrive removed" -ForegroundColor Green
 Write-Host ""
