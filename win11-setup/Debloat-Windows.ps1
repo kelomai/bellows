@@ -44,7 +44,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 1: Remove Bloatware Apps
 # ============================================================================
-Write-Host "🗑️  [1/9] Removing bloatware apps..." -ForegroundColor Yellow
+Write-Host "🗑️  [1/10] Removing bloatware apps..." -ForegroundColor Yellow
 
 $bloatware = @(
 	"Microsoft.BingNews"
@@ -103,6 +103,7 @@ $bloatware = @(
 	"*TikTok*"
 	"*Twitter*"
 	"*LinkedIn*"
+	"7EE7776C.LinkedInforWindows"
 	"*Wunderlist*"
 	"*Flipboard*"
 	"*Disney*"
@@ -131,7 +132,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 2: Remove OneDrive Completely
 # ============================================================================
-Write-Host "☁️  [2/9] Removing OneDrive..." -ForegroundColor Yellow
+Write-Host "☁️  [2/10] Removing OneDrive..." -ForegroundColor Yellow
 
 # Kill OneDrive process
 Write-Host "  Stopping OneDrive process..." -ForegroundColor Gray
@@ -199,7 +200,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 3: Disable Telemetry and Data Collection
 # ============================================================================
-Write-Host "🔒 [3/9] Disabling telemetry and data collection..." -ForegroundColor Yellow
+Write-Host "🔒 [3/10] Disabling telemetry and data collection..." -ForegroundColor Yellow
 
 # Disable telemetry
 Write-Host "  Disabling telemetry..." -ForegroundColor Gray
@@ -253,7 +254,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 4: Disable Windows Consumer Features
 # ============================================================================
-Write-Host "🛒 [4/9] Disabling consumer features..." -ForegroundColor Yellow
+Write-Host "🛒 [4/10] Disabling consumer features..." -ForegroundColor Yellow
 
 # Disable consumer features (prevents automatic app installs)
 Write-Host "  Disabling automatic app installs..." -ForegroundColor Gray
@@ -288,7 +289,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 5: Disable Cortana and Web Search
 # ============================================================================
-Write-Host "🔍 [5/9] Disabling Cortana and web search..." -ForegroundColor Yellow
+Write-Host "🔍 [5/10] Disabling Cortana and web search..." -ForegroundColor Yellow
 
 # Disable Cortana
 Write-Host "  Disabling Cortana..." -ForegroundColor Gray
@@ -310,7 +311,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 6: Disable Unnecessary Services
 # ============================================================================
-Write-Host "⚙️  [6/9] Disabling unnecessary services..." -ForegroundColor Yellow
+Write-Host "⚙️  [6/10] Disabling unnecessary services..." -ForegroundColor Yellow
 
 $services = @(
 	"DiagTrack"                 # Connected User Experiences and Telemetry
@@ -336,7 +337,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 7: Additional Privacy and Performance Tweaks
 # ============================================================================
-Write-Host "🔧 [7/9] Applying additional tweaks..." -ForegroundColor Yellow
+Write-Host "🔧 [7/10] Applying additional tweaks..." -ForegroundColor Yellow
 
 # Disable GameDVR
 Write-Host "  Disabling Game DVR..." -ForegroundColor Gray
@@ -395,7 +396,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 8: Apply Settings to Default User Profile (for Sysprep)
 # ============================================================================
-Write-Host "👥 [8/9] Applying settings to default user profile..." -ForegroundColor Yellow
+Write-Host "👥 [8/10] Applying settings to default user profile..." -ForegroundColor Yellow
 
 # Load the default user registry hive
 $defaultUserHive = "C:\Users\Default\NTUSER.DAT"
@@ -476,9 +477,39 @@ if ($?) {
 Write-Host ""
 
 # ============================================================================
-# SECTION 9: Clean up Taskbar
+# SECTION 9: Remove Promoted App Shortcuts
 # ============================================================================
-Write-Host "📌 [9/9] Cleaning up taskbar..." -ForegroundColor Yellow
+Write-Host "🔗 [9/10] Removing promoted app shortcuts..." -ForegroundColor Yellow
+
+# Remove LinkedIn and other promoted app shortcuts from Start Menu
+$shortcutLocations = @(
+	"$env:ProgramData\Microsoft\Windows\Start Menu\Programs",
+	"$env:APPDATA\Microsoft\Windows\Start Menu\Programs",
+	"$env:PUBLIC\Desktop",
+	"$env:USERPROFILE\Desktop"
+)
+
+$promotedApps = @("*LinkedIn*", "*TikTok*", "*Instagram*", "*Facebook*", "*Spotify*", "*Disney*", "*Netflix*")
+
+foreach ($location in $shortcutLocations) {
+	if (Test-Path $location) {
+		foreach ($app in $promotedApps) {
+			$shortcuts = Get-ChildItem -Path $location -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $app }
+			foreach ($shortcut in $shortcuts) {
+				Write-Host "  Removing shortcut: $($shortcut.Name)" -ForegroundColor Gray
+				Remove-Item -Path $shortcut.FullName -Force -ErrorAction SilentlyContinue
+			}
+		}
+	}
+}
+
+Write-Host "  ✓ Promoted app shortcuts removed" -ForegroundColor Green
+Write-Host ""
+
+# ============================================================================
+# SECTION 10: Clean up Taskbar
+# ============================================================================
+Write-Host "📌 [10/10] Cleaning up taskbar..." -ForegroundColor Yellow
 
 # Remove Store from taskbar
 Write-Host "  Unpinning Microsoft Store from taskbar..." -ForegroundColor Gray

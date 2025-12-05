@@ -160,11 +160,9 @@ Lightweight setup for business users.
 | Category | Apps |
 |----------|------|
 | **Browsers** | Chrome |
-| **Microsoft 365** | Office, OneDrive, PowerShell 7, Windows Terminal |
-| **Communication** | Slack, Zoom |
-| **Productivity** | 1Password, Notion, Adobe Acrobat Reader |
+| **Microsoft 365** | Office, OneDrive, PowerShell 7 |
+| **Productivity** | 1Password |
 | **Utilities** | 7-Zip |
-| **Fonts** | Cascadia Code Nerd Font |
 
 ---
 

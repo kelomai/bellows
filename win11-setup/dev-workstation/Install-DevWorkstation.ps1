@@ -156,18 +156,39 @@ function Install-WingetPackage {
     )
 
     $progress = "[$Current/$Total]"
+    $spinner = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
 
     if ($DryRun) {
         Write-Info "$progress [DRY RUN] Would install: $Name ($Id)"
         return
     }
 
-    Write-Host "  $progress $Name... " -ForegroundColor Cyan -NoNewline
-    $result = winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    Write-Host "  $progress $Name " -ForegroundColor Cyan -NoNewline
+
+    # Start winget as a background job
+    $job = Start-Job -ScriptBlock {
+        param($Id)
+        $output = winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>&1
+        @{ Output = $output; ExitCode = $LASTEXITCODE }
+    } -ArgumentList $Id
+
+    # Animate spinner while job runs
+    $i = 0
+    while ($job.State -eq 'Running') {
+        Write-Host "`b$($spinner[$i % $spinner.Length])" -NoNewline -ForegroundColor Yellow
+        Start-Sleep -Milliseconds 100
+        $i++
+    }
+    Write-Host "`b" -NoNewline
+
+    # Get result
+    $result = Receive-Job -Job $job
+    Remove-Job -Job $job
+
+    if ($result.ExitCode -eq 0) {
         Write-Host "Done" -ForegroundColor Green
     }
-    elseif ($result -match "already installed") {
+    elseif ($result.Output -match "already installed") {
         Write-Host "Already installed" -ForegroundColor DarkGray
     }
     else {

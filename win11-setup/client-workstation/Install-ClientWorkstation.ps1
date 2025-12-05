@@ -10,10 +10,9 @@
 
     Includes:
     - Web browser (Chrome)
-    - Microsoft 365 (Office, OneDrive)
-    - Communication (Slack, Zoom)
-    - Productivity (1Password, Notion, Adobe Reader)
-    - Shell customization (oh-my-posh)
+    - Microsoft 365 (Office, OneDrive, PowerShell 7)
+    - Productivity (1Password)
+    - Utilities (7-Zip)
 
     Package configuration is loaded from packages.json (local file or GitHub).
 .PARAMETER DryRun
@@ -156,18 +155,39 @@ function Install-WingetPackage {
     )
 
     $progress = "[$Current/$Total]"
+    $spinner = @('⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
 
     if ($DryRun) {
         Write-Info "$progress [DRY RUN] Would install: $Name ($Id)"
         return
     }
 
-    Write-Host "  $progress $Name... " -ForegroundColor Cyan -NoNewline
-    $result = winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>&1
-    if ($LASTEXITCODE -eq 0) {
+    Write-Host "  $progress $Name " -ForegroundColor Cyan -NoNewline
+
+    # Start winget as a background job
+    $job = Start-Job -ScriptBlock {
+        param($Id)
+        $output = winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>&1
+        @{ Output = $output; ExitCode = $LASTEXITCODE }
+    } -ArgumentList $Id
+
+    # Animate spinner while job runs
+    $i = 0
+    while ($job.State -eq 'Running') {
+        Write-Host "`b$($spinner[$i % $spinner.Length])" -NoNewline -ForegroundColor Yellow
+        Start-Sleep -Milliseconds 100
+        $i++
+    }
+    Write-Host "`b" -NoNewline
+
+    # Get result
+    $result = Receive-Job -Job $job
+    Remove-Job -Job $job
+
+    if ($result.ExitCode -eq 0) {
         Write-Host "Done" -ForegroundColor Green
     }
-    elseif ($result -match "already installed") {
+    elseif ($result.Output -match "already installed") {
         Write-Host "Already installed" -ForegroundColor DarkGray
     }
     else {
@@ -193,7 +213,7 @@ function Install-WingetCategory {
 # =============================================================================
 # LOAD PACKAGE MANIFEST
 # =============================================================================
-Write-Step "[1/4] Loading package manifest..."
+Write-Step "[1/3] Loading package manifest..."
 $manifest = Get-PackageManifest -LocalPath $ManifestPath -RemoteUrl $GithubManifestUrl
 Write-Success "Package manifest loaded"
 
@@ -202,7 +222,7 @@ Write-Success "Package manifest loaded"
 # =============================================================================
 
 # Check for winget
-Write-Step "[2/4] Checking winget..."
+Write-Step "[2/3] Checking winget..."
 if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
     Write-Host "  ERROR: winget not found. Please install App Installer from Microsoft Store." -ForegroundColor Red
     exit 1
@@ -210,11 +230,11 @@ if (!(Get-Command winget -ErrorAction SilentlyContinue)) {
 Write-Success "winget available"
 
 # Install Applications
-Write-Step "[3/4] Installing applications..."
+Write-Step "[3/3] Installing applications..."
 
 # Collect all packages first to show total count
 $allPackages = @()
-$categories = @("browsers", "microsoft", "communication", "productivity", "utilities", "fonts", "shell")
+$categories = @("browsers", "microsoft", "productivity", "utilities")
 foreach ($category in $categories) {
     $packages = $manifest.winget.$category
     if ($packages) {
@@ -233,70 +253,6 @@ foreach ($pkg in $allPackages) {
 }
 
 # =============================================================================
-# SHELL CONFIGURATION (oh-my-posh)
-# =============================================================================
-Write-Step "[4/4] Configuring PowerShell..."
-
-$ompConfigDir = "$env:USERPROFILE\.config\oh-my-posh"
-$ompConfig = "$ompConfigDir\bellows.omp.json"
-$profilePath = $PROFILE.CurrentUserAllHosts
-
-if ($DryRun) {
-    Write-Info "[DRY RUN] Would download oh-my-posh theme"
-    Write-Info "[DRY RUN] Would configure PowerShell profile"
-}
-else {
-    # Create config directory
-    if (!(Test-Path $ompConfigDir)) {
-        New-Item -ItemType Directory -Path $ompConfigDir -Force | Out-Null
-    }
-
-    # Download theme
-    Write-Info "Downloading oh-my-posh theme..."
-    $themeUrl = "https://raw.githubusercontent.com/kelomai/bellows/main/cli/oh-my-posh/bellows.omp.json"
-    try {
-        Invoke-WebRequest -Uri $themeUrl -OutFile $ompConfig -UseBasicParsing
-        Write-Success "Theme downloaded to $ompConfig"
-    }
-    catch {
-        Write-Warn "Failed to download theme: $_"
-    }
-
-    # Create/update PowerShell profile
-    $profileDir = Split-Path $profilePath -Parent
-    if (!(Test-Path $profileDir)) {
-        New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
-    }
-
-    $ompInit = @"
-
-# oh-my-posh prompt (Bellows theme)
-oh-my-posh init pwsh --config "`$env:USERPROFILE\.config\oh-my-posh\bellows.omp.json" | Invoke-Expression
-
-# PSReadLine configuration
-Set-PSReadLineOption -PredictionSource History
-Set-PSReadLineOption -PredictionViewStyle ListView
-Set-PSReadLineKeyHandler -Key UpArrow -Function HistorySearchBackward
-Set-PSReadLineKeyHandler -Key DownArrow -Function HistorySearchForward
-"@
-
-    if (Test-Path $profilePath) {
-        $existingProfile = Get-Content $profilePath -Raw
-        if ($existingProfile -notmatch "oh-my-posh init pwsh") {
-            Add-Content -Path $profilePath -Value $ompInit
-            Write-Success "Added oh-my-posh to PowerShell profile"
-        }
-        else {
-            Write-Success "PowerShell profile already configured"
-        }
-    }
-    else {
-        Set-Content -Path $profilePath -Value $ompInit
-        Write-Success "Created PowerShell profile with oh-my-posh"
-    }
-}
-
-# =============================================================================
 # COMPLETE
 # =============================================================================
 Write-Host ""
@@ -304,8 +260,7 @@ Write-Host "╔═════════════════════�
 Write-Host "║     ✅ Setup complete!                                  ║" -ForegroundColor DarkGray
 Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
 Write-Host "║  Next steps:                                            ║" -ForegroundColor DarkGray
-Write-Host "║    1. Restart PowerShell to load the new prompt         ║" -ForegroundColor DarkGray
-Write-Host "║    2. Sign into Microsoft 365 and OneDrive              ║" -ForegroundColor DarkGray
+Write-Host "║    1. Sign into Microsoft 365 and OneDrive              ║" -ForegroundColor DarkGray
 Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
 Write-Host "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" -ForegroundColor DarkGray
 Write-Host "║              https://kelomai.io                         ║" -ForegroundColor DarkGray
