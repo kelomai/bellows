@@ -514,6 +514,11 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Name "AllowNewsA
 Write-Host "  Setting search to icon only..." -ForegroundColor Gray
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 1 -ErrorAction SilentlyContinue
 
+# Restart Explorer to apply taskbar changes
+Write-Host "  Restarting Explorer to apply changes..." -ForegroundColor Gray
+Stop-Process -Name explorer -Force
+Start-Sleep -Seconds 2
+
 Write-Host "  ✓ Taskbar cleaned up" -ForegroundColor Green
 Write-Host ""
 
