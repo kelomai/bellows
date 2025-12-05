@@ -162,20 +162,16 @@ function Install-WingetPackage {
         return
     }
 
-    # Check if already installed
-    $installed = winget list --id $Id 2>$null | Select-String $Id
-    if ($installed) {
-        Write-Success "$progress $Name already installed"
+    Write-Host "  $progress $Name... " -ForegroundColor Cyan -NoNewline
+    $result = winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Done" -ForegroundColor Green
+    }
+    elseif ($result -match "already installed") {
+        Write-Host "Already installed" -ForegroundColor DarkGray
     }
     else {
-        Write-Host "  $progress Installing $Name..." -ForegroundColor Cyan
-        winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "         Done" -ForegroundColor Green
-        }
-        else {
-            Write-Host "         Failed" -ForegroundColor Yellow
-        }
+        Write-Host "Failed" -ForegroundColor Yellow
     }
 }
 
