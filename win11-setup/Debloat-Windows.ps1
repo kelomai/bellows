@@ -44,7 +44,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 1: Remove Bloatware Apps
 # ============================================================================
-Write-Host "🗑️  [1/9] Removing bloatware apps..." -ForegroundColor Yellow
+Write-Host "🗑️  [1/8] Removing bloatware apps..." -ForegroundColor Yellow
 
 $bloatware = @(
 	"Microsoft.BingNews"
@@ -127,7 +127,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 2: Remove OneDrive Completely
 # ============================================================================
-Write-Host "☁️  [2/9] Removing OneDrive..." -ForegroundColor Yellow
+Write-Host "☁️  [2/8] Removing OneDrive..." -ForegroundColor Yellow
 
 # Kill OneDrive process
 Write-Host "  Stopping OneDrive process..." -ForegroundColor Gray
@@ -169,7 +169,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 3: Disable Telemetry and Data Collection
 # ============================================================================
-Write-Host "🔒 [3/9] Disabling telemetry and data collection..." -ForegroundColor Yellow
+Write-Host "🔒 [3/8] Disabling telemetry and data collection..." -ForegroundColor Yellow
 
 # Disable telemetry
 Write-Host "  Disabling telemetry..." -ForegroundColor Gray
@@ -223,7 +223,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 4: Disable Windows Consumer Features
 # ============================================================================
-Write-Host "🛒 [4/9] Disabling consumer features..." -ForegroundColor Yellow
+Write-Host "🛒 [4/8] Disabling consumer features..." -ForegroundColor Yellow
 
 # Disable consumer features (prevents automatic app installs)
 Write-Host "  Disabling automatic app installs..." -ForegroundColor Gray
@@ -258,7 +258,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 5: Disable Cortana and Web Search
 # ============================================================================
-Write-Host "🔍 [5/9] Disabling Cortana and web search..." -ForegroundColor Yellow
+Write-Host "🔍 [5/8] Disabling Cortana and web search..." -ForegroundColor Yellow
 
 # Disable Cortana
 Write-Host "  Disabling Cortana..." -ForegroundColor Gray
@@ -280,7 +280,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 6: Disable Unnecessary Services
 # ============================================================================
-Write-Host "⚙️  [6/9] Disabling unnecessary services..." -ForegroundColor Yellow
+Write-Host "⚙️  [6/8] Disabling unnecessary services..." -ForegroundColor Yellow
 
 $services = @(
 	"DiagTrack"                 # Connected User Experiences and Telemetry
@@ -304,7 +304,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 7: Additional Privacy and Performance Tweaks
 # ============================================================================
-Write-Host "🔧 [7/9] Applying additional tweaks..." -ForegroundColor Yellow
+Write-Host "🔧 [7/8] Applying additional tweaks..." -ForegroundColor Yellow
 
 # Disable GameDVR
 Write-Host "  Disabling Game DVR..." -ForegroundColor Gray
@@ -350,7 +350,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 8: Apply Settings to Default User Profile (for Sysprep)
 # ============================================================================
-Write-Host "👥 [8/9] Applying settings to default user profile..." -ForegroundColor Yellow
+Write-Host "👥 [8/8] Applying settings to default user profile..." -ForegroundColor Yellow
 
 # Load the default user registry hive
 $defaultUserHive = "C:\Users\Default\NTUSER.DAT"
@@ -428,26 +428,6 @@ if ($?) {
 } else {
 	Write-Host "  ⚠ Could not load default user hive - skipping" -ForegroundColor Yellow
 }
-Write-Host ""
-
-# ============================================================================
-# SECTION 9: Clean Up
-# ============================================================================
-Write-Host "🧽 [9/9] Cleaning up..." -ForegroundColor Yellow
-
-# Clear temporary files
-Write-Host "  Clearing temporary files..." -ForegroundColor Gray
-Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
-Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
-
-# Clear Windows Update cache
-Write-Host "  Clearing Windows Update cache..." -ForegroundColor Gray
-Stop-Service wuauserv -Force -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 2  # Wait for service to fully stop
-Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
-Start-Service wuauserv -ErrorAction SilentlyContinue
-
-Write-Host "  ✓ Cleanup complete" -ForegroundColor Green
 Write-Host ""
 
 # ============================================================================
