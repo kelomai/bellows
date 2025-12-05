@@ -168,13 +168,13 @@ function Install-WingetPackage {
         Write-Success "$progress $Name already installed"
     }
     else {
-        Write-Host "  $progress Installing $Name..." -ForegroundColor Cyan -NoNewline
+        Write-Host "  $progress Installing $Name..." -ForegroundColor Cyan
         winget install --id $Id --accept-package-agreements --accept-source-agreements --silent 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Write-Host " Done" -ForegroundColor Green
+            Write-Host "         Done" -ForegroundColor Green
         }
         else {
-            Write-Host " Failed" -ForegroundColor Yellow
+            Write-Host "         Failed" -ForegroundColor Yellow
         }
     }
 }
