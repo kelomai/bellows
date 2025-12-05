@@ -18,28 +18,27 @@
       {"id": "Microsoft.WindowsTerminal", "name": "Windows Terminal"}
     ],
     "ai_llm": [
-      {"id": "LMStudio.LMStudio", "name": "LM Studio"},
+      {"id": "Element451.LMStudio", "name": "LM Studio"},
       {"id": "Ollama.Ollama", "name": "Ollama"},
-      {"id": "OpenAI.ChatGPT", "name": "ChatGPT"},
+      {"id": "lencx.ChatGPT", "name": "ChatGPT Desktop"},
       {"id": "Anthropic.Claude", "name": "Claude"}
     ],
     "microsoft_azure": [
       {"id": "Microsoft.PowerShell", "name": "PowerShell 7"},
-      {"id": "Microsoft.AzureStorageExplorer", "name": "Azure Storage Explorer"}
+      {"id": "Microsoft.Azure.StorageExplorer", "name": "Azure Storage Explorer"}
     ],
     "security": [
       {"id": "AgileBits.1Password", "name": "1Password"},
       {"id": "AgileBits.1Password.CLI", "name": "1Password CLI"}
     ],
     "fonts": [
-      {"id": "NerdFonts.FiraCode", "name": "Fira Code Nerd Font"},
-      {"id": "NerdFonts.JetBrainsMono", "name": "JetBrains Mono Nerd Font"}
+      {"id": "DEVCOM.JetBrainsMonoNerdFont", "name": "JetBrains Mono Nerd Font"}
     ],
     "cli_core": [
       {"id": "Git.Git", "name": "Git"},
       {"id": "GitHub.cli", "name": "GitHub CLI"},
       {"id": "cURL.cURL", "name": "cURL"},
-      {"id": "stedolan.jq", "name": "jq"}
+      {"id": "jqlang.jq", "name": "jq"}
     ],
     "cli_languages": [
       {"id": "Python.Python.3.13", "name": "Python 3.13"},
@@ -61,7 +60,7 @@
       {"id": "Microsoft.Azd", "name": "Azure Developer CLI"}
     ],
     "cli_database": [
-      {"id": "PostgreSQL.PostgreSQL", "name": "PostgreSQL"},
+      {"id": "PostgreSQL.PostgreSQL.17", "name": "PostgreSQL 17"},
       {"id": "Microsoft.SQLServerManagementStudio", "name": "SQL Server Management Studio"}
     ],
     "cli_shell": [

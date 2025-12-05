@@ -293,26 +293,38 @@ if ($DryRun) {
     Write-Info "[DRY RUN] Would install pipx and poetry"
 }
 else {
-    # Install pipx
-    if (Get-Command pipx -ErrorAction SilentlyContinue) {
-        Write-Success "pipx already installed"
+    # Refresh PATH to pick up newly installed tools (Python, etc.)
+    Write-Info "Refreshing PATH..."
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+    # Check if Python is available
+    if (!(Get-Command python -ErrorAction SilentlyContinue)) {
+        Write-Warn "Python not found in PATH. You may need to restart PowerShell and run pipx setup manually."
     }
     else {
-        Write-Info "Installing pipx..."
-        python -m pip install --user pipx
-        python -m pipx ensurepath
-    }
+        # Install pipx
+        if (Get-Command pipx -ErrorAction SilentlyContinue) {
+            Write-Success "pipx already installed"
+        }
+        else {
+            Write-Info "Installing pipx..."
+            python -m pip install --user pipx 2>$null
+            python -m pipx ensurepath 2>$null
+            # Refresh PATH again after pipx ensurepath
+            $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        }
 
-    # Install packages via pipx
-    if ($manifest.pipx_packages) {
-        foreach ($pkg in $manifest.pipx_packages) {
-            $pkgInstalled = pipx list 2>$null | Select-String $pkg
-            if ($pkgInstalled) {
-                Write-Success "$pkg already installed"
-            }
-            else {
-                Write-Info "Installing $pkg..."
-                pipx install $pkg
+        # Install packages via pipx
+        if ($manifest.pipx_packages -and (Get-Command pipx -ErrorAction SilentlyContinue)) {
+            foreach ($pkg in $manifest.pipx_packages) {
+                $pkgInstalled = pipx list 2>$null | Select-String $pkg
+                if ($pkgInstalled) {
+                    Write-Success "$pkg already installed"
+                }
+                else {
+                    Write-Info "Installing $pkg..."
+                    pipx install $pkg 2>$null
+                }
             }
         }
     }

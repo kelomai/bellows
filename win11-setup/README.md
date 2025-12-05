@@ -112,7 +112,7 @@ irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/dev-works
 | **Containers** | Docker Desktop |
 | **LLM/AI Tools** | LM Studio, Ollama, ChatGPT, Claude |
 | **Microsoft/Azure** | PowerShell 7, Azure Storage Explorer |
-| **Fonts** | Fira Code Nerd Font, JetBrains Mono Nerd Font |
+| **Fonts** | JetBrains Mono Nerd Font |
 
 ### CLI Tools
 
