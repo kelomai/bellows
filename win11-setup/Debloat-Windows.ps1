@@ -29,9 +29,9 @@
     irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-Windows.ps1 | iex
 #>
 
-# Clear error variable to track errors during execution
+# Suppress all non-critical errors from displaying
+$ErrorActionPreference = 'SilentlyContinue'
 $Error.Clear()
-$script:ScriptErrors = @()
 
 Write-Host "╔═════════════════════════════════════════════╗" -ForegroundColor DarkGray
 Write-Host "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║" -ForegroundColor DarkGray
@@ -344,6 +344,22 @@ if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
 	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Force | Out-Null
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0
+
+# Enable Dark Mode
+Write-Host "  Enabling Dark Mode..." -ForegroundColor Gray
+$themePath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+Set-ItemProperty -Path $themePath -Name "AppsUseLightTheme" -Type DWord -Value 0
+Set-ItemProperty -Path $themePath -Name "SystemUsesLightTheme" -Type DWord -Value 0
+
+# Enable Remote Desktop
+Write-Host "  Enabling Remote Desktop..." -ForegroundColor Gray
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Type DWord -Value 0
+# Disable NLA requirement
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Type DWord -Value 0
+# Enable firewall rule for RDP
+Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+# Add Administrators to Remote Desktop Users
+Add-LocalGroupMember -Group "Remote Desktop Users" -Member "Administrators" -ErrorAction SilentlyContinue
 
 # Disable unnecessary scheduled tasks
 Write-Host "  Disabling unnecessary scheduled tasks..." -ForegroundColor Gray
