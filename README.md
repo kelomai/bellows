@@ -5,8 +5,6 @@ Automated workstation setup scripts for AI developers and teams. Provision consi
 [![CI](https://github.com/kelomai/bellows/actions/workflows/ci.yml/badge.svg)](https://github.com/kelomai/bellows/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> 💡 **Note:** The CI badge will appear once you push to GitHub and the workflow runs for the first time.
-
 ## ✨ Why Bellows?
 
 - ⚡ **One command setup** - Get a fully configured dev environment in minutes

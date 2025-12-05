@@ -19,8 +19,11 @@
 .EXAMPLE
     .\Debloat-Windows.ps1
 .NOTES
+    Author: 🧙‍♂️ Kelomai (https://kelomai.io)
+    License: MIT
+
     Run as Administrator
-    Reboot after running, then run Windows Update before sysprep
+    Reboot after running, then run Windows Update
 
     Remote execution:
     irm https://raw.githubusercontent.com/kelomai/bellows/main/win11-setup/Debloat-Windows.ps1 | iex
@@ -30,9 +33,12 @@
 $Error.Clear()
 $script:ScriptErrors = @()
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  🧹 Windows 11 Complete Debloat Script" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "╔═════════════════════════════════════════════╗" -ForegroundColor DarkGray
+Write-Host "║        Welcome 👋 to 🧙‍♂️ Kelomai 🚀          ║" -ForegroundColor DarkGray
+Write-Host "║           https://kelomai.io                ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║       Windows 11 Debloat Script 🧹          ║" -ForegroundColor DarkGray
+Write-Host "╚═════════════════════════════════════════════╝" -ForegroundColor DarkGray
 Write-Host ""
 
 # ============================================================================
@@ -431,13 +437,14 @@ Write-Host "🧽 [9/9] Cleaning up..." -ForegroundColor Yellow
 
 # Clear temporary files
 Write-Host "  Clearing temporary files..." -ForegroundColor Gray
-Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:TEMP\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
+Remove-Item -Path "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
 
 # Clear Windows Update cache
 Write-Host "  Clearing Windows Update cache..." -ForegroundColor Gray
 Stop-Service wuauserv -Force -ErrorAction SilentlyContinue
-Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 2  # Wait for service to fully stop
+Remove-Item -Path "C:\Windows\SoftwareDistribution\Download\*" -Recurse -Force -ErrorAction SilentlyContinue 2>$null
 Start-Service wuauserv -ErrorAction SilentlyContinue
 
 Write-Host "  ✓ Cleanup complete" -ForegroundColor Green
@@ -446,15 +453,18 @@ Write-Host ""
 # ============================================================================
 # Complete
 # ============================================================================
-Write-Host "========================================" -ForegroundColor Green
-Write-Host "  🎉 Debloat Complete!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "📋 Next steps:" -ForegroundColor Cyan
-Write-Host "  1. 🔄 Reboot Windows" -ForegroundColor White
-Write-Host "  2. 📥 Run Windows Update one more time" -ForegroundColor White
-Write-Host "  3. 💾 Run Sysprep: C:\Windows\System32\Sysprep\sysprep.exe /oobe /generalize /shutdown /mode:vm" -ForegroundColor White
-Write-Host "  4. 📦 After shutdown, convert VM to template in Proxmox" -ForegroundColor White
+Write-Host "╔═════════════════════════════════════════════════════════╗" -ForegroundColor DarkGray
+Write-Host "║     ✅ Debloat complete!                                ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║  Next steps:                                            ║" -ForegroundColor DarkGray
+Write-Host "║    1. Reboot Windows                                    ║" -ForegroundColor DarkGray
+Write-Host "║    2. Run Windows Update one more time                  ║" -ForegroundColor DarkGray
+Write-Host "║    3. Run your workstation setup script                 ║" -ForegroundColor DarkGray
+Write-Host "╠═════════════════════════════════════════════════════════╣" -ForegroundColor DarkGray
+Write-Host "║       Thank you 🤝 for using 🧙‍♂️ Kelomai 🚀              ║" -ForegroundColor DarkGray
+Write-Host "║              https://kelomai.io                         ║" -ForegroundColor DarkGray
+Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
 Write-Host ""
 
 # ============================================================================
