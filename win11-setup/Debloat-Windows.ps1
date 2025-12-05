@@ -88,6 +88,11 @@ $bloatware = @(
 	"Microsoft.ZuneVideo"
 	"MicrosoftTeams"
 	"Microsoft.Teams"
+	"MSTeams"
+	"*MicrosoftTeams*"
+	"Microsoft.Teams.Preview"
+	"MicrosoftCorporationII.MicrosoftTeams"
+	"MicrosoftCorporationII.Teams"
 	"Microsoft.OutlookForWindows"
 	"Clipchamp.Clipchamp"
 	"*ActiproSoftwareLLC*"
@@ -493,7 +498,7 @@ $shortcutLocations = @(
 	"C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 )
 
-$promotedApps = @("*LinkedIn*", "*TikTok*", "*Instagram*", "*Facebook*", "*Spotify*", "*Disney*", "*Netflix*", "*Prime Video*", "*Hulu*")
+$promotedApps = @("*LinkedIn*", "*TikTok*", "*Instagram*", "*Facebook*", "*Spotify*", "*Disney*", "*Netflix*", "*Prime Video*", "*Hulu*", "*Teams*", "*Microsoft Teams*")
 
 foreach ($location in $shortcutLocations) {
 	if (Test-Path $location) {
@@ -512,18 +517,29 @@ foreach ($location in $shortcutLocations) {
 	}
 }
 
-# Also remove any LinkedIn folders
-$linkedInFolders = @(
+# Also remove any LinkedIn and Teams folders
+$appFoldersToRemove = @(
 	"$env:LOCALAPPDATA\LinkedIn",
 	"$env:APPDATA\LinkedIn",
-	"$env:ProgramData\LinkedIn"
+	"$env:ProgramData\LinkedIn",
+	"$env:LOCALAPPDATA\Microsoft\Teams",
+	"$env:APPDATA\Microsoft\Teams",
+	"$env:LOCALAPPDATA\SquirrelTemp",
+	"$env:LOCALAPPDATA\Microsoft\TeamsMeetingAddin"
 )
-foreach ($folder in $linkedInFolders) {
+foreach ($folder in $appFoldersToRemove) {
 	if (Test-Path $folder) {
-		Write-Host "  Removing LinkedIn folder: $folder" -ForegroundColor Gray
+		Write-Host "  Removing folder: $folder" -ForegroundColor Gray
 		Remove-Item -Path $folder -Recurse -Force -ErrorAction SilentlyContinue
 	}
 }
+
+# Prevent Teams from auto-installing
+Write-Host "  Preventing Teams from reinstalling..." -ForegroundColor Gray
+if (!(Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications")) {
+	New-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -Force | Out-Null
+}
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Communications" -Name "ConfigureChatAutoInstall" -Type DWord -Value 0 -ErrorAction SilentlyContinue
 
 # Clear Start Menu cache to force refresh
 Write-Host "  Clearing Start Menu cache..." -ForegroundColor Gray
