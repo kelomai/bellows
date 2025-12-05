@@ -44,7 +44,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 1: Remove Bloatware Apps
 # ============================================================================
-Write-Host "🗑️  [1/8] Removing bloatware apps..." -ForegroundColor Yellow
+Write-Host "🗑️  [1/9] Removing bloatware apps..." -ForegroundColor Yellow
 
 $bloatware = @(
 	"Microsoft.BingNews"
@@ -131,7 +131,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 2: Remove OneDrive Completely
 # ============================================================================
-Write-Host "☁️  [2/8] Removing OneDrive..." -ForegroundColor Yellow
+Write-Host "☁️  [2/9] Removing OneDrive..." -ForegroundColor Yellow
 
 # Kill OneDrive process
 Write-Host "  Stopping OneDrive process..." -ForegroundColor Gray
@@ -199,7 +199,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 3: Disable Telemetry and Data Collection
 # ============================================================================
-Write-Host "🔒 [3/8] Disabling telemetry and data collection..." -ForegroundColor Yellow
+Write-Host "🔒 [3/9] Disabling telemetry and data collection..." -ForegroundColor Yellow
 
 # Disable telemetry
 Write-Host "  Disabling telemetry..." -ForegroundColor Gray
@@ -253,7 +253,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 4: Disable Windows Consumer Features
 # ============================================================================
-Write-Host "🛒 [4/8] Disabling consumer features..." -ForegroundColor Yellow
+Write-Host "🛒 [4/9] Disabling consumer features..." -ForegroundColor Yellow
 
 # Disable consumer features (prevents automatic app installs)
 Write-Host "  Disabling automatic app installs..." -ForegroundColor Gray
@@ -288,7 +288,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 5: Disable Cortana and Web Search
 # ============================================================================
-Write-Host "🔍 [5/8] Disabling Cortana and web search..." -ForegroundColor Yellow
+Write-Host "🔍 [5/9] Disabling Cortana and web search..." -ForegroundColor Yellow
 
 # Disable Cortana
 Write-Host "  Disabling Cortana..." -ForegroundColor Gray
@@ -310,7 +310,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 6: Disable Unnecessary Services
 # ============================================================================
-Write-Host "⚙️  [6/8] Disabling unnecessary services..." -ForegroundColor Yellow
+Write-Host "⚙️  [6/9] Disabling unnecessary services..." -ForegroundColor Yellow
 
 $services = @(
 	"DiagTrack"                 # Connected User Experiences and Telemetry
@@ -336,7 +336,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 7: Additional Privacy and Performance Tweaks
 # ============================================================================
-Write-Host "🔧 [7/8] Applying additional tweaks..." -ForegroundColor Yellow
+Write-Host "🔧 [7/9] Applying additional tweaks..." -ForegroundColor Yellow
 
 # Disable GameDVR
 Write-Host "  Disabling Game DVR..." -ForegroundColor Gray
@@ -379,7 +379,7 @@ Write-Host ""
 # ============================================================================
 # SECTION 8: Apply Settings to Default User Profile (for Sysprep)
 # ============================================================================
-Write-Host "👥 [8/8] Applying settings to default user profile..." -ForegroundColor Yellow
+Write-Host "👥 [8/9] Applying settings to default user profile..." -ForegroundColor Yellow
 
 # Load the default user registry hive
 $defaultUserHive = "C:\Users\Default\NTUSER.DAT"
@@ -460,6 +460,48 @@ if ($?) {
 Write-Host ""
 
 # ============================================================================
+# SECTION 9: Clean up Taskbar
+# ============================================================================
+Write-Host "📌 [9/9] Cleaning up taskbar..." -ForegroundColor Yellow
+
+# Remove Store from taskbar
+Write-Host "  Unpinning Microsoft Store from taskbar..." -ForegroundColor Gray
+try {
+	$shell = New-Object -ComObject Shell.Application
+	$apps = $shell.NameSpace("shell:::{4234d49b-0245-4df3-b780-3893943456e1}").Items()
+	$store = $apps | Where-Object { $_.Path -like "*WindowsStore*" }
+	if ($store) { $store.InvokeVerb("taskbarunpin") }
+} catch {}
+
+# Remove Outlook from taskbar
+Write-Host "  Unpinning Outlook from taskbar..." -ForegroundColor Gray
+try {
+	$outlook = $apps | Where-Object { $_.Path -like "*Outlook*" }
+	if ($outlook) { $outlook.InvokeVerb("taskbarunpin") }
+} catch {}
+
+# Disable Chat/Teams icon on taskbar
+Write-Host "  Disabling Chat icon on taskbar..." -ForegroundColor Gray
+$taskbarPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+Set-ItemProperty -Path $taskbarPath -Name "TaskbarMn" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+
+# Disable Widgets/Weather on taskbar
+Write-Host "  Disabling Widgets (weather/news)..." -ForegroundColor Gray
+Set-ItemProperty -Path $taskbarPath -Name "TaskbarDa" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+# Also disable via policy
+if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh")) {
+	New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Force | Out-Null
+}
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Dsh" -Name "AllowNewsAndInterests" -Type DWord -Value 0 -ErrorAction SilentlyContinue
+
+# Disable Search box on taskbar (show icon only)
+Write-Host "  Setting search to icon only..." -ForegroundColor Gray
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchboxTaskbarMode" -Type DWord -Value 1 -ErrorAction SilentlyContinue
+
+Write-Host "  ✓ Taskbar cleaned up" -ForegroundColor Green
+Write-Host ""
+
+# ============================================================================
 # Complete
 # ============================================================================
 Write-Host ""
@@ -476,31 +518,3 @@ Write-Host "║              https://kelomai.io                         ║" -Fo
 Write-Host "╚═════════════════════════════════════════════════════════╝" -ForegroundColor DarkGray
 Write-Host ""
 
-# ============================================================================
-# Error Summary
-# ============================================================================
-if ($Error.Count -gt 0) {
-	Write-Host "========================================" -ForegroundColor Red
-	Write-Host "  ⚠️  Errors Encountered: $($Error.Count)" -ForegroundColor Red
-	Write-Host "========================================" -ForegroundColor Red
-	Write-Host ""
-
-	$errorIndex = 1
-	foreach ($err in $Error) {
-		Write-Host "[$errorIndex] $($err.CategoryInfo.Category): $($err.Exception.Message)" -ForegroundColor Yellow
-		if ($err.InvocationInfo.ScriptLineNumber) {
-			Write-Host "    Line $($err.InvocationInfo.ScriptLineNumber): $($err.InvocationInfo.Line.Trim())" -ForegroundColor Gray
-		}
-		Write-Host ""
-		$errorIndex++
-	}
-
-	Write-Host "💡 Note: Most errors above are expected (e.g., apps not found, services not present)." -ForegroundColor Cyan
-	Write-Host "   Review the errors to ensure no critical failures occurred." -ForegroundColor Cyan
-	Write-Host ""
-} else {
-	Write-Host "========================================" -ForegroundColor Green
-	Write-Host "  ✅ No errors encountered!" -ForegroundColor Green
-	Write-Host "========================================" -ForegroundColor Green
-	Write-Host ""
-}
