@@ -135,7 +135,7 @@ Write-Host "☁️  [2/8] Removing OneDrive..." -ForegroundColor Yellow
 
 # Kill OneDrive process
 Write-Host "  Stopping OneDrive process..." -ForegroundColor Gray
-taskkill.exe /F /IM "OneDrive.exe" 2>$null
+$null = taskkill.exe /F /IM "OneDrive.exe" 2>&1
 Start-Sleep -Seconds 2
 
 # Uninstall OneDrive
@@ -148,12 +148,12 @@ if (Test-Path "$env:SystemRoot\SysWOW64\OneDriveSetup.exe") {
 }
 Start-Sleep -Seconds 2
 
-# Remove OneDrive leftovers
+# Remove OneDrive leftovers (some files may be locked, ignore errors)
 Write-Host "  Removing OneDrive leftovers..." -ForegroundColor Gray
-if (Test-Path "$env:LOCALAPPDATA\Microsoft\OneDrive") { Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Microsoft\OneDrive" -ErrorAction SilentlyContinue }
-if (Test-Path "$env:PROGRAMDATA\Microsoft OneDrive") { Remove-Item -Recurse -Force "$env:PROGRAMDATA\Microsoft OneDrive" -ErrorAction SilentlyContinue }
-if (Test-Path "$env:USERPROFILE\OneDrive") { Remove-Item -Recurse -Force "$env:USERPROFILE\OneDrive" -ErrorAction SilentlyContinue }
-if (Test-Path "C:\OneDriveTemp") { Remove-Item -Recurse -Force "C:\OneDriveTemp" -ErrorAction SilentlyContinue }
+try { if (Test-Path "$env:LOCALAPPDATA\Microsoft\OneDrive") { Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Microsoft\OneDrive" -ErrorAction Stop } } catch {}
+try { if (Test-Path "$env:PROGRAMDATA\Microsoft OneDrive") { Remove-Item -Recurse -Force "$env:PROGRAMDATA\Microsoft OneDrive" -ErrorAction Stop } } catch {}
+try { if (Test-Path "$env:USERPROFILE\OneDrive") { Remove-Item -Recurse -Force "$env:USERPROFILE\OneDrive" -ErrorAction Stop } } catch {}
+try { if (Test-Path "C:\OneDriveTemp") { Remove-Item -Recurse -Force "C:\OneDriveTemp" -ErrorAction Stop } } catch {}
 
 # Remove OneDrive from Explorer sidebar
 Write-Host "  Removing OneDrive from Explorer..." -ForegroundColor Gray
