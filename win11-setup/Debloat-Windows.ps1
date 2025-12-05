@@ -104,6 +104,8 @@ $bloatware = @(
 	"*Twitter*"
 	"*LinkedIn*"
 	"7EE7776C.LinkedInforWindows"
+	"*LinkedInforWindows*"
+	"LinkedIn.LinkedIn"
 	"*Wunderlist*"
 	"*Flipboard*"
 	"*Disney*"
@@ -481,26 +483,53 @@ Write-Host ""
 # ============================================================================
 Write-Host "🔗 [9/10] Removing promoted app shortcuts..." -ForegroundColor Yellow
 
-# Remove LinkedIn and other promoted app shortcuts from Start Menu
+# Remove LinkedIn and other promoted app shortcuts from Start Menu and Desktop
 $shortcutLocations = @(
 	"$env:ProgramData\Microsoft\Windows\Start Menu\Programs",
 	"$env:APPDATA\Microsoft\Windows\Start Menu\Programs",
 	"$env:PUBLIC\Desktop",
-	"$env:USERPROFILE\Desktop"
+	"$env:USERPROFILE\Desktop",
+	"$env:ALLUSERSPROFILE\Microsoft\Windows\Start Menu\Programs",
+	"C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs"
 )
 
-$promotedApps = @("*LinkedIn*", "*TikTok*", "*Instagram*", "*Facebook*", "*Spotify*", "*Disney*", "*Netflix*")
+$promotedApps = @("*LinkedIn*", "*TikTok*", "*Instagram*", "*Facebook*", "*Spotify*", "*Disney*", "*Netflix*", "*Prime Video*", "*Hulu*")
 
 foreach ($location in $shortcutLocations) {
 	if (Test-Path $location) {
 		foreach ($app in $promotedApps) {
-			$shortcuts = Get-ChildItem -Path $location -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $app }
-			foreach ($shortcut in $shortcuts) {
-				Write-Host "  Removing shortcut: $($shortcut.Name)" -ForegroundColor Gray
-				Remove-Item -Path $shortcut.FullName -Force -ErrorAction SilentlyContinue
+			# Remove .lnk shortcuts
+			Get-ChildItem -Path $location -Filter "*.lnk" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $app } | ForEach-Object {
+				Write-Host "  Removing: $($_.Name)" -ForegroundColor Gray
+				Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
+			}
+			# Remove .url web shortcuts
+			Get-ChildItem -Path $location -Filter "*.url" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like $app } | ForEach-Object {
+				Write-Host "  Removing: $($_.Name)" -ForegroundColor Gray
+				Remove-Item -Path $_.FullName -Force -ErrorAction SilentlyContinue
 			}
 		}
 	}
+}
+
+# Also remove any LinkedIn folders
+$linkedInFolders = @(
+	"$env:LOCALAPPDATA\LinkedIn",
+	"$env:APPDATA\LinkedIn",
+	"$env:ProgramData\LinkedIn"
+)
+foreach ($folder in $linkedInFolders) {
+	if (Test-Path $folder) {
+		Write-Host "  Removing LinkedIn folder: $folder" -ForegroundColor Gray
+		Remove-Item -Path $folder -Recurse -Force -ErrorAction SilentlyContinue
+	}
+}
+
+# Clear Start Menu cache to force refresh
+Write-Host "  Clearing Start Menu cache..." -ForegroundColor Gray
+$startCache = "$env:LOCALAPPDATA\Packages\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy\TempState"
+if (Test-Path $startCache) {
+	Remove-Item -Path "$startCache\*" -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host "  ✓ Promoted app shortcuts removed" -ForegroundColor Green
