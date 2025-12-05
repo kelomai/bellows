@@ -150,16 +150,18 @@ Start-Sleep -Seconds 2
 
 # Remove OneDrive leftovers
 Write-Host "  Removing OneDrive leftovers..." -ForegroundColor Gray
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:LOCALAPPDATA\Microsoft\OneDrive"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:PROGRAMDATA\Microsoft OneDrive"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "$env:USERPROFILE\OneDrive"
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue "C:\OneDriveTemp"
+if (Test-Path "$env:LOCALAPPDATA\Microsoft\OneDrive") { Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Microsoft\OneDrive" -ErrorAction SilentlyContinue }
+if (Test-Path "$env:PROGRAMDATA\Microsoft OneDrive") { Remove-Item -Recurse -Force "$env:PROGRAMDATA\Microsoft OneDrive" -ErrorAction SilentlyContinue }
+if (Test-Path "$env:USERPROFILE\OneDrive") { Remove-Item -Recurse -Force "$env:USERPROFILE\OneDrive" -ErrorAction SilentlyContinue }
+if (Test-Path "C:\OneDriveTemp") { Remove-Item -Recurse -Force "C:\OneDriveTemp" -ErrorAction SilentlyContinue }
 
 # Remove OneDrive from Explorer sidebar
 Write-Host "  Removing OneDrive from Explorer..." -ForegroundColor Gray
-New-PSDrive -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" -Name "HKCR" -ErrorAction SilentlyContinue | Out-Null
-Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
-Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -ErrorAction SilentlyContinue
+if (!(Get-PSDrive -Name "HKCR" -ErrorAction SilentlyContinue)) {
+	New-PSDrive -PSProvider "Registry" -Root "HKEY_CLASSES_ROOT" -Name "HKCR" -ErrorAction SilentlyContinue | Out-Null
+}
+if (Test-Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}") { Remove-Item -Path "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -Force }
+if (Test-Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}") { Remove-Item -Path "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" -Recurse -Force }
 
 # Disable OneDrive via Group Policy
 if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive")) {
@@ -321,9 +323,11 @@ $services = @(
 )
 
 foreach ($service in $services) {
-	Write-Host "  Disabling: $service" -ForegroundColor Gray
-	Stop-Service $service -Force -ErrorAction SilentlyContinue
-	Set-Service $service -StartupType Disabled -ErrorAction SilentlyContinue
+	if (Get-Service -Name $service -ErrorAction SilentlyContinue) {
+		Write-Host "  Disabling: $service" -ForegroundColor Gray
+		Stop-Service $service -Force -ErrorAction SilentlyContinue
+		Set-Service $service -StartupType Disabled -ErrorAction SilentlyContinue
+	}
 }
 
 Write-Host "  ✓ Services disabled" -ForegroundColor Green
@@ -341,13 +345,6 @@ if (!(Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR")) {
 }
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\GameDVR" -Name "AllowGameDVR" -Type DWord -Value 0
 
-# Disable HomeGroup
-Write-Host "  Disabling HomeGroup..." -ForegroundColor Gray
-Stop-Service "HomeGroupListener" -Force -ErrorAction SilentlyContinue
-Set-Service "HomeGroupListener" -StartupType Disabled -ErrorAction SilentlyContinue
-Stop-Service "HomeGroupProvider" -Force -ErrorAction SilentlyContinue
-Set-Service "HomeGroupProvider" -StartupType Disabled -ErrorAction SilentlyContinue
-
 # Disable unnecessary scheduled tasks
 Write-Host "  Disabling unnecessary scheduled tasks..." -ForegroundColor Gray
 $tasks = @(
@@ -363,7 +360,9 @@ $tasks = @(
 )
 
 foreach ($task in $tasks) {
-	Disable-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue | Out-Null
+	if (Get-ScheduledTask -TaskName ($task -split '\\')[-1] -ErrorAction SilentlyContinue) {
+		Disable-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue | Out-Null
+	}
 }
 
 # Disable Windows Spotlight
