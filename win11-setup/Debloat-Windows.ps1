@@ -360,9 +360,11 @@ $tasks = @(
 )
 
 foreach ($task in $tasks) {
-	if (Get-ScheduledTask -TaskName ($task -split '\\')[-1] -ErrorAction SilentlyContinue) {
+	try {
+		$taskName = ($task -split '\\')[-1]
+		$null = Get-ScheduledTask -TaskName $taskName -ErrorAction Stop
 		Disable-ScheduledTask -TaskName $task -ErrorAction SilentlyContinue | Out-Null
-	}
+	} catch {}
 }
 
 # Disable Windows Spotlight
