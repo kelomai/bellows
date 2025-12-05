@@ -116,8 +116,11 @@ function Get-PackageManifest {
         }
     }
 
-    # Check for packages.json in script directory
-    $scriptDir = Split-Path -Parent $MyInvocation.ScriptName
+    # Check for packages.json in script directory (only works when run from file, not irm | iex)
+    $scriptName = $MyInvocation.ScriptName
+    if ($scriptName) {
+        $scriptDir = Split-Path -Parent $scriptName
+    }
     if ($scriptDir) {
         $localManifest = Join-Path $scriptDir "packages.json"
         if (Test-Path $localManifest) {
