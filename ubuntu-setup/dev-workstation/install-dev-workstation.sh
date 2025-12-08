@@ -191,11 +191,11 @@ echo "Started at: $(date)" | tee -a "$LOG_FILE"
 echo "Log file: $LOG_FILE" | tee -a "$LOG_FILE"
 echo ""
 
-# Ensure jq is available for JSON parsing
-if ! command -v jq &>/dev/null; then
-    log "Installing jq for JSON parsing..."
+# Ensure curl and jq are available (needed before manifest loading)
+if ! command -v curl &>/dev/null || ! command -v jq &>/dev/null; then
+    log "Installing curl and jq..."
     sudo apt update >> "$LOG_FILE" 2>&1
-    sudo apt install -y jq >> "$LOG_FILE" 2>&1
+    sudo apt install -y curl jq >> "$LOG_FILE" 2>&1
 fi
 
 # Load manifest
