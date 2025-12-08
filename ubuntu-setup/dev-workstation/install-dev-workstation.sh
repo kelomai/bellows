@@ -136,20 +136,20 @@ load_manifest() {
     # Check for local packages.json
     if [[ -f "$SCRIPT_DIR/packages.json" ]]; then
         manifest_file="$SCRIPT_DIR/packages.json"
-        log "Loading manifest from: $manifest_file"
+        log "Loading manifest from: $manifest_file" >&2
     else
         # Fetch from GitHub
-        log "Fetching manifest from GitHub..."
+        log "Fetching manifest from GitHub..." >&2
         manifest_file="/tmp/packages-$$.json"
         if ! curl -fsSL "$GITHUB_MANIFEST_URL" -o "$manifest_file"; then
-            log "ERROR: Failed to download package manifest"
+            log "ERROR: Failed to download package manifest" >&2
             exit 1
         fi
     fi
 
     # Validate JSON
     if ! jq empty "$manifest_file" 2>/dev/null; then
-        log "ERROR: Invalid JSON in manifest file"
+        log "ERROR: Invalid JSON in manifest file" >&2
         exit 1
     fi
 
